@@ -4,6 +4,7 @@ import { getDailyLog, saveTeacherRatings } from '../../services/dailyLogsService
 import { formatDateLabel } from '../../utils/date';
 import { FALLBACK_SUBJECT } from '../../constants/subjects';
 import OverallStackedBar from '../../components/charts/OverallStackedBar';
+import SubjectMeter from '../../components/charts/SubjectMeter';
 import Loading from '../../components/common/Loading';
 import EmptyState from '../../components/common/EmptyState';
 import ErrorMessage from '../../components/common/ErrorMessage';
@@ -91,28 +92,33 @@ export default function TeacherDateDetail() {
 
       {tracked.length > 0 && <OverallStackedBar subjects={tracked} />}
 
-      {tracked.map((s) => (
-        <div className="subject-section" key={s.subject}>
-          <h3>{s.subject}</h3>
-          <p>{s.rawText}</p>
-          <input
-            type="number"
-            min={0}
-            max={100}
-            placeholder="미평가"
-            value={inputs[s.subject] ?? ''}
-            onChange={(e) => handleChange(s.subject, e.target.value)}
-          />
-          <span className="hint" style={{ display: 'inline', marginLeft: 6 }}>
-            %
-          </span>
-        </div>
-      ))}
+      {tracked.map((s) => {
+        const inputValue = inputs[s.subject] ?? '';
+        const previewPercent = inputValue === '' ? null : Number(inputValue);
+        return (
+          <div className="subject-section" key={s.subject}>
+            <h3>{s.subject}</h3>
+            <SubjectMeter subject={s.subject} percent={previewPercent} />
+            <p className="subject-section__raw">{s.rawText}</p>
+            <input
+              type="number"
+              min={0}
+              max={100}
+              placeholder="미평가"
+              value={inputValue}
+              onChange={(e) => handleChange(s.subject, e.target.value)}
+            />
+            <span className="hint" style={{ display: 'inline', marginLeft: 6 }}>
+              %
+            </span>
+          </div>
+        );
+      })}
 
       {misc && (
         <div className="subject-section">
           <h3>기타</h3>
-          <p>{misc.rawText}</p>
+          <p className="subject-section__raw">{misc.rawText}</p>
         </div>
       )}
 

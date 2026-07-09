@@ -5,7 +5,7 @@ import { getDailyLog } from '../../services/dailyLogsService';
 import { formatDateLabel } from '../../utils/date';
 import { FALLBACK_SUBJECT } from '../../constants/subjects';
 import OverallStackedBar from '../../components/charts/OverallStackedBar';
-import SubjectBarList from '../../components/charts/SubjectBarList';
+import SubjectMeter from '../../components/charts/SubjectMeter';
 import Loading from '../../components/common/Loading';
 import EmptyState from '../../components/common/EmptyState';
 import ErrorMessage from '../../components/common/ErrorMessage';
@@ -49,7 +49,13 @@ export default function DailyStudyDetail() {
       ) : (
         <>
           <OverallStackedBar subjects={tracked} />
-          <SubjectBarList subjects={tracked} />
+          {tracked.map((s) => (
+            <div className="subject-section" key={s.subject}>
+              <h3>{s.subject}</h3>
+              <SubjectMeter subject={s.subject} percent={s.percent} />
+              <p className="subject-section__raw">{s.rawText}</p>
+            </div>
+          ))}
         </>
       )}
     </div>
