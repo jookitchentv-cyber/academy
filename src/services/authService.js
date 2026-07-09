@@ -1,27 +1,33 @@
 import { collection, query, where, limit, getDocs } from 'firebase/firestore';
 import { db } from '../firebase/config';
 
-/**
- * 코드로 학생/선생님을 찾는다. 자릿수가 아니라 실제 컬렉션 조회 결과로 role을 판별한다
- * (자릿수는 코드 발급 관례일 뿐, DB 조회가 더 안전한 판별 기준).
- * 반환값: { role: 'student', studentId, name } | { role: 'teacher', teacherId } | null
- */
-export async function loginWithCode(code) {
-  const trimmed = code.trim();
-  if (!trimmed) return null;
+/** 학생 로그인: 이름 + 4자리 코드가 둘 다 일치해야 함. */
+export async function loginStudent(name, code) {
+  const trimmedName = name.trim();
+  const trimmedCode = code.trim();
+  if (!trimmedName || !trimmedCode) return null;
 
-  const studentsQ = query(collection(db, 'students'), where('code', '==', trimmed), limit(1));
-  const studentSnap = await getDocs(studentsQ);
-  if (!studentSnap.empty) {
-    const doc = studentSnap.docs[0];
-    return { role: 'student', studentId: doc.id, name: doc.data().name };
-  }
+  const q = query(
+    collection(db, 'students'),
+    where('name', '==', trimmedName),
+    where('code', '==', trimmedCode),
+    limit(1)
+  );
+  const snap = await getDocs(q);
+  if (snap.empty) return null;
 
-  const teachersQ = query(collection(db, 'teachers'), where('code', '==', trimmed), limit(1));
-  const teacherSnap = await getDocs(teachersQ);
-  if (!teacherSnap.empty) {
-    return { role: 'teacher', teacherId: teacherSnap.docs[0].id };
-  }
+  const doc = snap.docs[0];
+  return { role: 'student', studentId: doc.id, name: doc.data().name };
+}
 
-  return null;
+/** 선생님 로그인: 코드만으로 확인. */
+export async function loginTeacher(code) {
+  const trimmedCode = code.trim();
+  if (!trimmedCode) return null;
+
+  const q = query(collection(db, 'teachers'), where('code', '==', trimmedCode), limit(1));
+  const snap = await getDocs(q);
+  if (snap.empty) return null;
+
+  return { role: 'teacher', teacherId: snap.docs[0].id };
 }
