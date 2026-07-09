@@ -11,11 +11,14 @@ export default function DailyStudyLayout() {
         <span />
       </div>
       <nav className="tabs">
-        <NavLink to="input" className={({ isActive }) => (isActive ? 'active' : '')}>
-          학습상태 입력하기
+        <NavLink to="plan" className={({ isActive }) => (isActive ? 'active' : '')}>
+          금일 학습 계획
         </NavLink>
-        <NavLink to="history" className={({ isActive }) => (isActive ? 'active' : '')}>
-          학습상태 확인하기
+        <NavLink to="actual" className={({ isActive }) => (isActive ? 'active' : '')}>
+          금일 학습량
+        </NavLink>
+        <NavLink to="review" className={({ isActive }) => (isActive ? 'active' : '')}>
+          점검
         </NavLink>
       </nav>
       <Outlet />

@@ -4,13 +4,20 @@ service cloud.firestore {
     // 이 앱은 Firebase Auth를 쓰지 않고 Firestore에서 코드를 직접 대조하는 방식으로
     // 로그인한다(사용자가 명시적으로 선택한 구조). 그 말은 이 규칙이 "요청을 보낸 사람이
     // 누구인지" 서버 단에서 검증할 방법이 없다는 뜻이다 — 배포된 URL과 Firebase 설정값을
-    // 아는 사람이면 누구나 읽고 쓸 수 있다. 학생 1명 + 선생님 1명이 쓰는 데모 규모라서
-    // 받아들이는 트레이드오프이며, 더 넓게 쓰려면 재검토(Firebase Auth 도입 등)가 필요하다.
+    // 아는 사람이면 누구나 읽고 쓸 수 있다. 학생/학부모/선생님 소수 인원이 쓰는 데모
+    // 규모라서 받아들이는 트레이드오프이며, 더 넓게 쓰려면 재검토(Firebase Auth 도입
+    // 등)가 필요하다. 참고: dailyLogs.comment(선생님 코멘트)를 학생에게 숨기는 것도
+    // UI 레벨에서만 가능하다 — 인증이 없어 문서 자체는 누구나 읽을 수 있으므로, 학생이
+    // 개발자 도구로 직접 Firestore를 호출하면 코멘트를 볼 수 있다.
     match /students/{id} {
       allow read: if true;
       allow write: if false; // 콘솔에서 수동으로 시딩
     }
     match /teachers/{id} {
+      allow read: if true;
+      allow write: if false; // 콘솔에서 수동으로 시딩
+    }
+    match /parents/{id} {
       allow read: if true;
       allow write: if false; // 콘솔에서 수동으로 시딩
     }

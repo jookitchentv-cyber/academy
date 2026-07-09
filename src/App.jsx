@@ -7,10 +7,13 @@ import NotFound from './pages/NotFound';
 
 import StudentHome from './pages/student/StudentHome';
 import DailyStudyLayout from './pages/student/DailyStudyLayout';
-import DailyStudyInput from './pages/student/DailyStudyInput';
-import DailyStudyHistory from './pages/student/DailyStudyHistory';
-import DailyStudyDetail from './pages/student/DailyStudyDetail';
+import StudyTextInput from './pages/student/StudyTextInput';
 import ExamPrep from './pages/student/ExamPrep';
+
+import ReviewHistory from './pages/shared/ReviewHistory';
+import ReviewDetail from './pages/shared/ReviewDetail';
+
+import ParentLayout from './pages/parent/ParentLayout';
 
 import TeacherHome from './pages/teacher/TeacherHome';
 import StudentMenu from './pages/teacher/StudentMenu';
@@ -28,12 +31,20 @@ export default function App() {
           <Route element={<RequireRole role="student" />}>
             <Route path="/student" element={<StudentHome />} />
             <Route path="/student/daily" element={<DailyStudyLayout />}>
-              <Route index element={<Navigate to="input" replace />} />
-              <Route path="input" element={<DailyStudyInput />} />
-              <Route path="history" element={<DailyStudyHistory />} />
-              <Route path="history/:date" element={<DailyStudyDetail />} />
+              <Route index element={<Navigate to="actual" replace />} />
+              <Route path="plan" element={<StudyTextInput mode="plan" />} />
+              <Route path="actual" element={<StudyTextInput mode="actual" />} />
+              <Route path="review" element={<ReviewHistory />} />
+              <Route path="review/:date" element={<ReviewDetail />} />
             </Route>
             <Route path="/student/exam" element={<ExamPrep />} />
+          </Route>
+
+          <Route element={<RequireRole role="parent" />}>
+            <Route path="/parent" element={<ParentLayout />}>
+              <Route index element={<ReviewHistory />} />
+              <Route path="history/:date" element={<ReviewDetail />} />
+            </Route>
           </Route>
 
           <Route element={<RequireRole role="teacher" />}>

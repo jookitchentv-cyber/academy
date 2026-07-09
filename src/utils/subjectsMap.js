@@ -21,3 +21,12 @@ export function subjectsMapToOrderedArray(map = {}) {
     .filter((subject) => map[subject])
     .map((subject) => ({ subject, ...map[subject] }));
 }
+
+// "금일 학습 계획"은 채점 대상이 아니라 참고용 텍스트일 뿐이라 percent 개념이 없다.
+export function planSubjectsToMap(subjectsArray) {
+  const map = {};
+  for (const s of subjectsArray) {
+    map[s.subject] = { rawText: s.rawText };
+  }
+  return map;
+}

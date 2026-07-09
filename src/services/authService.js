@@ -31,3 +31,23 @@ export async function loginTeacher(code) {
 
   return { role: 'teacher', teacherId: snap.docs[0].id };
 }
+
+/** 학부모 로그인: 자녀 이름 + 코드가 둘 다 일치해야 함. 문서에 저장된 studentId로
+ * 자녀 데이터를 조회한다. */
+export async function loginParent(name, code) {
+  const trimmedName = name.trim();
+  const trimmedCode = code.trim();
+  if (!trimmedName || !trimmedCode) return null;
+
+  const q = query(
+    collection(db, 'parents'),
+    where('name', '==', trimmedName),
+    where('code', '==', trimmedCode),
+    limit(1)
+  );
+  const snap = await getDocs(q);
+  if (snap.empty) return null;
+
+  const doc = snap.docs[0];
+  return { role: 'parent', parentId: doc.id, studentId: doc.data().studentId, name: doc.data().name };
+}

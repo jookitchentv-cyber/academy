@@ -12,7 +12,11 @@ import {
 } from 'firebase/firestore';
 import { db } from '../firebase/config';
 import { parseSubjects } from '../utils/parseSubjects';
-import { subjectsArrayToMap, subjectsMapToOrderedArray } from '../utils/subjectsMap';
+import {
+  subjectsArrayToMap,
+  subjectsMapToOrderedArray,
+  planSubjectsToMap,
+} from '../utils/subjectsMap';
 import { FALLBACK_SUBJECT } from '../constants/subjects';
 
 const logDocId = (studentId, date) => studentId + '_' + date;
@@ -26,6 +30,8 @@ function fromSnap(snap) {
     date: data.date,
     rawText: data.rawText,
     subjects: subjectsMapToOrderedArray(data.subjects),
+    plan: subjectsMapToOrderedArray(data.plan?.subjects),
+    comment: data.comment ?? null,
   };
 }
 
@@ -52,8 +58,9 @@ export async function listDailyLogs(studentId) {
   return snap.docs.map(fromSnap).sort((a, b) => b.date.localeCompare(a.date));
 }
 
-// 학생이 오늘의 서술형 텍스트를 저장. 같은 날 재저장 시 이미 매겨진 percent는
-// 과목명 기준으로 보존한다(선생님이 먼저 채점했는데 학생이 다시 저장해도 안 날아가게).
+// 학생이 오늘 "실제로 한" 학습량을 저장(금일 학습량). 같은 날 재저장 시 이미 매겨진
+// percent는 과목명 기준으로 보존한다(선생님이 먼저 채점했는데 학생이 다시 저장해도
+// 안 날아가게). merge:true로 써서 같은 문서의 plan/comment 필드를 건드리지 않는다.
 export async function saveStudentEntry(studentId, date, rawText) {
   const parsed = parseSubjects(rawText);
   const ref = doc(db, 'dailyLogs', logDocId(studentId, date));
@@ -66,22 +73,52 @@ export async function saveStudentEntry(studentId, date, rawText) {
     return { ...s, percent: typeof prior?.percent === 'number' ? prior.percent : null };
   });
 
-  await setDoc(ref, {
-    studentId,
-    date,
-    rawText,
-    subjects: subjectsArrayToMap(merged),
-    updatedAt: serverTimestamp(),
-  });
+  await setDoc(
+    ref,
+    {
+      studentId,
+      date,
+      rawText,
+      subjects: subjectsArrayToMap(merged),
+      updatedAt: serverTimestamp(),
+    },
+    { merge: true }
+  );
 }
 
-// 선생님이 과목별 percent를 저장. percentsBySubject 예: { 국어: 50, 수학: 100 }
-// 각 과목 필드만 원자적으로 갱신(배열 전체를 읽고 다시 쓰지 않음).
-export async function saveTeacherRatings(studentId, date, percentsBySubject) {
+// 학생이 오늘 "계획한" 학습 내용을 저장(금일 학습 계획). 학습량과는 별개 데이터라
+// plan 필드 아래에 따로 저장하고, 채점 대상이 아니므로 percent는 두지 않는다.
+// merge:true로 써서 같은 문서의 subjects/comment 필드를 건드리지 않는다.
+export async function saveStudentPlan(studentId, date, rawText) {
+  const parsed = parseSubjects(rawText);
+  const ref = doc(db, 'dailyLogs', logDocId(studentId, date));
+
+  await setDoc(
+    ref,
+    {
+      studentId,
+      date,
+      plan: {
+        rawText,
+        subjects: planSubjectsToMap(parsed),
+      },
+      updatedAt: serverTimestamp(),
+    },
+    { merge: true }
+  );
+}
+
+// 선생님이 과목별 percent와 코멘트를 저장. percentsBySubject 예: { 국어: 50, 수학: 100 }
+// 각 필드만 원자적으로 갱신(배열/문서 전체를 읽고 다시 쓰지 않음). comment가 undefined면
+// 건드리지 않고, 빈 문자열/null이면 지운다.
+export async function saveTeacherRatings(studentId, date, percentsBySubject, comment) {
   const ref = doc(db, 'dailyLogs', logDocId(studentId, date));
   const updates = { updatedAt: serverTimestamp() };
   for (const [subject, percent] of Object.entries(percentsBySubject)) {
     updates['subjects.' + subject + '.percent'] = percent === '' || percent === null ? null : Number(percent);
+  }
+  if (comment !== undefined) {
+    updates.comment = comment === '' ? null : comment;
   }
   await updateDoc(ref, updates);
 }

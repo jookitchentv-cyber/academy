@@ -212,6 +212,13 @@ textarea.study-input {
   color: var(--text-muted) !important;
 }
 
+.subject-section__plan {
+  margin-top: 4px !important;
+  font-size: 13px !important;
+  font-style: italic;
+  color: var(--text-muted) !important;
+}
+
 .subject-meter {
   display: flex;
   align-items: center;
