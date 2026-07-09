@@ -7,7 +7,6 @@ import {
   collection,
   query,
   where,
-  orderBy,
   documentId,
   getDocs,
 } from 'firebase/firestore';
@@ -36,7 +35,10 @@ export async function getDailyLog(studentId, date) {
 }
 
 // 학생의 모든 기록을 최신 날짜순으로 반환. 문서 ID가 "studentId_YYYY-MM-DD"라
-// 사전순 정렬이 곧 날짜순이라 복합 인덱스 없이 documentId() 범위 쿼리로 처리한다.
+// prefix 범위 쿼리로 해당 학생 것만 가져온다. documentId()에 range 필터와 orderBy를
+// 같이 걸면(둘 다 자동 __name__ 인덱스를 쓸 거라 예상했지만) Firestore가 실제로는
+// 복합 인덱스를 요구해서, orderBy는 서버가 아니라 클라이언트에서 정렬한다
+// (레코드 수가 적은 개인용 앱이라 정렬 비용은 무시할 만함).
 // prefixEnd는 유니코드 사전순으로 prefix로 시작하는 모든 문자열보다 큰 상한값.
 export async function listDailyLogs(studentId) {
   const prefix = studentId + '_';
@@ -45,10 +47,9 @@ export async function listDailyLogs(studentId) {
     collection(db, 'dailyLogs'),
     where(documentId(), '>=', prefix),
     where(documentId(), '<', prefixEnd),
-    orderBy(documentId(), 'desc'),
   );
   const snap = await getDocs(q);
-  return snap.docs.map(fromSnap);
+  return snap.docs.map(fromSnap).sort((a, b) => b.date.localeCompare(a.date));
 }
 
 // 학생이 오늘의 서술형 텍스트를 저장. 같은 날 재저장 시 이미 매겨진 percent는
