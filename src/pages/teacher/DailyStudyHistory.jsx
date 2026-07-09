@@ -36,7 +36,7 @@ export default function DailyStudyHistory() {
         const overall = computeOverallPercent(log.subjects);
         return (
           <li key={log.id}>
-            <Link to={`history/${log.date}`}>
+            <Link to={`/teacher/students/${studentId}/daily/history/${log.date}`}>
               <span className="log-date">{formatDateLabel(log.date)}</span>
               <span className="log-overall">{overall === null ? '미평가' : `${overall}%`}</span>
             </Link>
