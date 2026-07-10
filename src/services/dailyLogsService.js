@@ -31,6 +31,7 @@ function fromSnap(snap) {
     rawText: data.rawText,
     subjects: subjectsMapToOrderedArray(data.subjects),
     plan: subjectsMapToOrderedArray(data.plan?.subjects),
+    planRawText: data.plan?.rawText ?? '',
     comment: data.comment ?? null,
     attendanceConfirmed: data.attendanceConfirmed === true,
   };

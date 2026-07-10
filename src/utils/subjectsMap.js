@@ -30,3 +30,21 @@ export function planSubjectsToMap(subjectsArray) {
   }
   return map;
 }
+
+// 계획(plan)만 쓰고 학습량(subjects)은 아직 안 쓴 과목도 점검 화면에 보여야 한다 —
+// subjects 배열만 훑으면 그런 과목이 통째로 사라진다. SUBJECTS 순서를 따르는
+// 하나의 목록으로 합쳐서 반환한다. (기타는 각 화면에서 별도로 다루므로 제외)
+export function mergeSubjectsWithPlan(subjects = [], plan = []) {
+  const bySubject = new Map();
+  for (const s of subjects) {
+    if (s.subject === FALLBACK_SUBJECT) continue;
+    bySubject.set(s.subject, { subject: s.subject, percent: s.percent, rawText: s.rawText, planText: undefined });
+  }
+  for (const p of plan) {
+    if (p.subject === FALLBACK_SUBJECT) continue;
+    const entry = bySubject.get(p.subject) ?? { subject: p.subject, percent: undefined, rawText: undefined, planText: undefined };
+    entry.planText = p.rawText;
+    bySubject.set(p.subject, entry);
+  }
+  return SUBJECTS.filter((name) => bySubject.has(name)).map((name) => bySubject.get(name));
+}

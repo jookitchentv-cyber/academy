@@ -3,7 +3,7 @@ import { Link, useParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { getDailyLog } from '../../services/dailyLogsService';
 import { formatDateLabel } from '../../utils/date';
-import { FALLBACK_SUBJECT } from '../../constants/subjects';
+import { mergeSubjectsWithPlan } from '../../utils/subjectsMap';
 import OverallStackedBar from '../../components/charts/OverallStackedBar';
 import SubjectMeter from '../../components/charts/SubjectMeter';
 import Loading from '../../components/common/Loading';
@@ -39,8 +39,9 @@ export default function ReviewDetail() {
   if (log === undefined) return <Loading />;
   if (log === null) return <EmptyState label="해당 날짜의 기록이 없습니다." />;
 
-  const tracked = log.subjects.filter((s) => s.subject !== FALLBACK_SUBJECT);
-  const planBySubject = new Map((log.plan ?? []).map((p) => [p.subject, p.rawText]));
+  // subjects(학습량)만 보면 계획만 쓰고 아직 학습량은 안 쓴 과목이 통째로 빠지므로,
+  // 계획/학습량을 과목 기준으로 합쳐서 하나의 목록으로 렌더링한다.
+  const merged = mergeSubjectsWithPlan(log.subjects, log.plan);
 
   return (
     <div>
@@ -51,11 +52,11 @@ export default function ReviewDetail() {
       </p>
       <h2 style={{ fontSize: 16, marginBottom: 16 }}>{formatDateLabel(date)}</h2>
 
-      {tracked.length === 0 ? (
+      {merged.length === 0 ? (
         <EmptyState label="인식된 과목이 없습니다." />
       ) : (
         <>
-          <OverallStackedBar subjects={tracked} />
+          <OverallStackedBar subjects={merged} />
 
           {isParent && log.comment && (
             <div className="subject-section">
@@ -64,14 +65,14 @@ export default function ReviewDetail() {
             </div>
           )}
 
-          {tracked.map((s) => (
+          {merged.map((s) => (
             <div className="subject-section" key={s.subject}>
               <h3>{s.subject}</h3>
               <SubjectMeter subject={s.subject} percent={s.percent} />
-              {planBySubject.has(s.subject) && (
-                <p className="subject-section__plan">계획: {planBySubject.get(s.subject)}</p>
-              )}
-              <p className="subject-section__raw">오늘 한 양: {s.rawText}</p>
+              {s.planText && <p className="subject-section__plan">계획: {s.planText}</p>}
+              <p className="subject-section__raw">
+                오늘 한 양: {s.rawText !== undefined ? s.rawText : '아직 기록 없음'}
+              </p>
             </div>
           ))}
         </>

@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom';
 import { getDailyLog, saveTeacherRatings } from '../../services/dailyLogsService';
 import { formatDateLabel } from '../../utils/date';
 import { FALLBACK_SUBJECT } from '../../constants/subjects';
+import { mergeSubjectsWithPlan } from '../../utils/subjectsMap';
 import OverallStackedBar from '../../components/charts/OverallStackedBar';
 import SubjectMeter from '../../components/charts/SubjectMeter';
 import Loading from '../../components/common/Loading';
@@ -31,8 +32,8 @@ export default function TeacherDateDetail() {
         setLog(data);
         if (data) {
           const initial = {};
-          for (const s of data.subjects) {
-            if (s.subject !== FALLBACK_SUBJECT) initial[s.subject] = toInputValue(s.percent);
+          for (const s of mergeSubjectsWithPlan(data.subjects, data.plan)) {
+            initial[s.subject] = toInputValue(s.percent);
           }
           setInputs(initial);
           setComment(data.comment ?? '');
@@ -64,13 +65,16 @@ export default function TeacherDateDetail() {
     }
     try {
       await saveTeacherRatings(studentId, date, percents, comment);
-      setLog((prev) => ({
-        ...prev,
-        subjects: prev.subjects.map((s) =>
-          s.subject in percents ? { ...s, percent: percents[s.subject] } : s
-        ),
-        comment: comment === '' ? null : comment,
-      }));
+      setLog((prev) => {
+        // 계획만 있고 학습량은 없던 과목에 처음 퍼센트를 매기면 prev.subjects에
+        // 아직 그 과목 항목이 없을 수 있다 — map으로는 못 바꾸니 upsert로 처리.
+        const bySubject = new Map(prev.subjects.map((s) => [s.subject, s]));
+        for (const [subject, percent] of Object.entries(percents)) {
+          const existing = bySubject.get(subject);
+          bySubject.set(subject, existing ? { ...existing, percent } : { subject, rawText: undefined, percent });
+        }
+        return { ...prev, subjects: Array.from(bySubject.values()), comment: comment === '' ? null : comment };
+      });
       setSaveStatus('saved');
     } catch {
       setSaveStatus('error');
@@ -81,9 +85,10 @@ export default function TeacherDateDetail() {
   if (log === undefined) return <Loading />;
   if (log === null) return <EmptyState label="해당 날짜의 기록이 없습니다." />;
 
-  const tracked = log.subjects.filter((s) => s.subject !== FALLBACK_SUBJECT);
+  // subjects(학습량)만 보면 계획만 쓰고 아직 학습량은 안 쓴 과목이 통째로 빠지므로,
+  // 계획/학습량을 과목 기준으로 합쳐서 하나의 목록으로 렌더링한다.
+  const merged = mergeSubjectsWithPlan(log.subjects, log.plan);
   const misc = log.subjects.find((s) => s.subject === FALLBACK_SUBJECT);
-  const planBySubject = new Map((log.plan ?? []).map((p) => [p.subject, p.rawText]));
 
   return (
     <div>
@@ -94,19 +99,19 @@ export default function TeacherDateDetail() {
       </p>
       <h2 style={{ fontSize: 16, marginBottom: 16 }}>{formatDateLabel(date)}</h2>
 
-      {tracked.length > 0 && <OverallStackedBar subjects={tracked} />}
+      {merged.length > 0 && <OverallStackedBar subjects={merged} />}
 
-      {tracked.map((s) => {
+      {merged.map((s) => {
         const inputValue = inputs[s.subject] ?? '';
         const previewPercent = inputValue === '' ? null : Number(inputValue);
         return (
           <div className="subject-section" key={s.subject}>
             <h3>{s.subject}</h3>
             <SubjectMeter subject={s.subject} percent={previewPercent} />
-            {planBySubject.has(s.subject) && (
-              <p className="subject-section__plan">계획: {planBySubject.get(s.subject)}</p>
-            )}
-            <p className="subject-section__raw">오늘 한 양: {s.rawText}</p>
+            {s.planText && <p className="subject-section__plan">계획: {s.planText}</p>}
+            <p className="subject-section__raw">
+              오늘 한 양: {s.rawText !== undefined ? s.rawText : '아직 기록 없음'}
+            </p>
             <input
               type="number"
               min={0}
