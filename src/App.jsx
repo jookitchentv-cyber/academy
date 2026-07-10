@@ -31,9 +31,9 @@ export default function App() {
           <Route element={<RequireRole role="student" />}>
             <Route path="/student" element={<StudentHome />} />
             <Route path="/student/daily" element={<DailyStudyLayout />}>
-              <Route index element={<Navigate to="actual" replace />} />
-              <Route path="plan" element={<StudyTextInput mode="plan" />} />
-              <Route path="actual" element={<StudyTextInput mode="actual" />} />
+              <Route index element={<Navigate to="plan" replace />} />
+              <Route path="plan" element={<StudyTextInput key="plan" mode="plan" />} />
+              <Route path="actual" element={<StudyTextInput key="actual" mode="actual" />} />
               <Route path="review" element={<ReviewHistory />} />
               <Route path="review/:date" element={<ReviewDetail />} />
             </Route>

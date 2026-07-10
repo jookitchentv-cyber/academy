@@ -27,17 +27,24 @@
 
 * {
   box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 body {
   margin: 0;
   background: var(--page-bg);
   color: var(--text-primary);
-  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  font-family: system-ui, -apple-system, 'Segoe UI', 'Noto Sans KR', Roboto, sans-serif;
 }
 
 #root {
   max-width: 480px;
+  width: 100%;
   margin: 0 auto;
   min-height: 100vh;
   background: var(--surface);
@@ -48,24 +55,40 @@ body {
 .page {
   padding: 20px 20px 40px;
   flex: 1;
+  width: 100%;
+  overflow-x: hidden;
+}
+
+@media (max-width: 380px) {
+  .page {
+    padding: 14px 14px 32px;
+  }
 }
 
 .page-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 8px;
   margin-bottom: 16px;
 }
 
 .page-header h1 {
-  font-size: 20px;
+  font-size: 19px;
   margin: 0;
+  overflow-wrap: anywhere;
 }
 
 .back-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 8px 4px;
+  margin: -8px -4px;
   color: var(--text-secondary);
   text-decoration: none;
   font-size: 14px;
+  white-space: nowrap;
 }
 
 .logout-button,
@@ -74,9 +97,11 @@ body {
   border: 1px solid var(--border);
   color: var(--text-secondary);
   border-radius: 8px;
-  padding: 6px 12px;
+  padding: 8px 14px;
+  min-height: 36px;
   font-size: 13px;
   cursor: pointer;
+  white-space: nowrap;
 }
 
 .menu-list {
@@ -105,17 +130,31 @@ body {
 
 .tabs {
   display: flex;
-  gap: 4px;
+  gap: 2px;
   margin-bottom: 16px;
   border-bottom: 1px solid var(--border);
 }
 
 .tabs a {
-  padding: 10px 14px;
+  flex: 1;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 10px 6px;
   text-decoration: none;
   color: var(--text-secondary);
-  font-size: 14px;
+  font-size: 13px;
+  line-height: 1.3;
   border-bottom: 2px solid transparent;
+}
+
+@media (min-width: 420px) {
+  .tabs a {
+    font-size: 14px;
+    padding: 10px 14px;
+  }
 }
 
 .tabs a.active {
@@ -132,7 +171,7 @@ textarea.study-input {
   border: 1px solid var(--border);
   background: var(--surface);
   color: var(--text-primary);
-  font-size: 15px;
+  font-size: 16px; /* 16px 미만이면 iOS Safari가 포커스 시 자동 확대함 */
   font-family: inherit;
   resize: vertical;
 }
@@ -148,9 +187,17 @@ textarea.study-input {
   color: #fff;
   border: none;
   border-radius: 10px;
-  padding: 10px 18px;
+  padding: 12px 20px;
+  min-height: 46px;
   font-size: 15px;
   cursor: pointer;
+  width: 100%;
+}
+
+@media (min-width: 420px) {
+  .primary-button {
+    width: auto;
+  }
 }
 
 .primary-button:disabled {
@@ -206,17 +253,21 @@ textarea.study-input {
   white-space: pre-wrap;
 }
 
-.subject-section__raw {
-  margin-top: 8px !important;
-  font-size: 13px !important;
-  color: var(--text-muted) !important;
+.subject-section__raw,
+.subject-section__plan {
+  margin-top: 6px !important;
+  font-size: 14px !important;
+  font-weight: 600;
+  font-family: system-ui, -apple-system, 'Segoe UI', 'Noto Sans KR', Roboto, sans-serif;
+  color: var(--text-secondary) !important;
 }
 
-.subject-section__plan {
+.subject-section__comment {
   margin-top: 4px !important;
-  font-size: 13px !important;
-  font-style: italic;
-  color: var(--text-muted) !important;
+  font-size: 15px !important;
+  font-weight: 700;
+  font-family: system-ui, -apple-system, 'Segoe UI', 'Noto Sans KR', Roboto, sans-serif;
+  color: var(--text-primary) !important;
 }
 
 .subject-meter {
@@ -247,12 +298,14 @@ textarea.study-input {
 }
 
 .subject-section input[type='number'] {
-  width: 80px;
-  padding: 6px 8px;
+  width: 90px;
+  min-height: 40px;
+  padding: 8px 10px;
   border-radius: 8px;
   border: 1px solid var(--border);
   background: var(--surface);
   color: var(--text-primary);
+  font-size: 16px; /* 16px 미만이면 iOS Safari가 포커스 시 자동 확대함 */
   margin-top: 8px;
 }
 

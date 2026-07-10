@@ -56,24 +56,25 @@ export default function ReviewDetail() {
       ) : (
         <>
           <OverallStackedBar subjects={tracked} />
+
+          {isParent && log.comment && (
+            <div className="subject-section">
+              <h3>선생님 코멘트</h3>
+              <p className="subject-section__comment">{log.comment}</p>
+            </div>
+          )}
+
           {tracked.map((s) => (
             <div className="subject-section" key={s.subject}>
               <h3>{s.subject}</h3>
               <SubjectMeter subject={s.subject} percent={s.percent} />
-              <p className="subject-section__raw">{s.rawText}</p>
               {planBySubject.has(s.subject) && (
                 <p className="subject-section__plan">계획: {planBySubject.get(s.subject)}</p>
               )}
+              <p className="subject-section__raw">오늘 한 양: {s.rawText}</p>
             </div>
           ))}
         </>
-      )}
-
-      {isParent && log.comment && (
-        <div className="subject-section">
-          <h3>선생님 코멘트</h3>
-          <p className="subject-section__raw">{log.comment}</p>
-        </div>
       )}
     </div>
   );

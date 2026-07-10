@@ -4,7 +4,8 @@ import { useAuth } from '../context/AuthContext';
 import { loginStudent, loginTeacher, loginParent } from '../services/authService';
 
 const ROLE_HOME = { student: '/student', teacher: '/teacher', parent: '/parent' };
-const ROLE_LABEL = { student: '학생', parent: '학부모', teacher: '선생님' };
+// 학부모 로그인은 학부모 본인 이름이 아니라 자녀(학생) 이름 + 학부모용 코드로 확인한다.
+const NAME_PLACEHOLDER = { student: '학생 이름', parent: '자녀 이름' };
 
 export default function LoginPage() {
   const [role, setRole] = useState(null); // null | 'student' | 'parent' | 'teacher'
@@ -87,7 +88,7 @@ export default function LoginPage() {
           {needsName && (
             <input
               type="text"
-              placeholder={`${ROLE_LABEL[role]} 이름`}
+              placeholder={NAME_PLACEHOLDER[role]}
               value={name}
               onChange={(e) => setName(e.target.value)}
               autoFocus
