@@ -3,7 +3,7 @@ import { Link, useParams } from 'react-router-dom';
 import { getStudent } from '../../services/studentsService';
 import Loading from '../../components/common/Loading';
 
-// 학생 클릭 시 보여주는 2개 메뉴(일상 공부 / 시험 대비) — 학생 화면(StudentHome)과 동일 구조.
+// 학생 클릭 시 보여주는 메뉴(일상 공부 / 시험 대비 / 출석확인) — 학생 화면(StudentHome)과 동일 구조.
 export default function StudentMenu() {
   const { studentId } = useParams();
   const [student, setStudent] = useState(undefined);
@@ -33,6 +33,9 @@ export default function StudentMenu() {
         </li>
         <li>
           <Link to={`/teacher/students/${studentId}/exam`}>시험 대비</Link>
+        </li>
+        <li>
+          <Link to={`/teacher/students/${studentId}/attendance`}>출석확인</Link>
         </li>
       </ul>
     </div>

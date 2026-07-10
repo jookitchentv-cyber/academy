@@ -9,6 +9,7 @@ import StudentHome from './pages/student/StudentHome';
 import DailyStudyLayout from './pages/student/DailyStudyLayout';
 import StudyTextInput from './pages/student/StudyTextInput';
 import ExamPrep from './pages/student/ExamPrep';
+import StudentAttendanceCalendar from './pages/student/AttendanceCalendar';
 
 import ReviewHistory from './pages/shared/ReviewHistory';
 import ReviewDetail from './pages/shared/ReviewDetail';
@@ -20,6 +21,7 @@ import StudentMenu from './pages/teacher/StudentMenu';
 import TeacherDailyStudyLayout from './pages/teacher/DailyStudyLayout';
 import TeacherDailyStudyHistory from './pages/teacher/DailyStudyHistory';
 import TeacherDateDetail from './pages/teacher/TeacherDateDetail';
+import TeacherAttendanceCalendar from './pages/teacher/AttendanceCalendar';
 
 export default function App() {
   return (
@@ -38,6 +40,7 @@ export default function App() {
               <Route path="review/:date" element={<ReviewDetail />} />
             </Route>
             <Route path="/student/exam" element={<ExamPrep />} />
+            <Route path="/student/attendance" element={<StudentAttendanceCalendar />} />
           </Route>
 
           <Route element={<RequireRole role="parent" />}>
@@ -56,6 +59,7 @@ export default function App() {
               <Route path="history/:date" element={<TeacherDateDetail />} />
             </Route>
             <Route path="/teacher/students/:studentId/exam" element={<ExamPrep />} />
+            <Route path="/teacher/students/:studentId/attendance" element={<TeacherAttendanceCalendar />} />
           </Route>
 
           <Route path="*" element={<NotFound />} />

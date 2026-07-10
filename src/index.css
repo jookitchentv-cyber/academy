@@ -8,6 +8,8 @@
   --border: rgba(11, 11, 11, 0.1);
   --accent: #2a78d6;
   --danger: #d03b3b;
+  --status-good: #0ca30c;
+  --status-warning: #fab219;
   color-scheme: light dark;
 }
 
@@ -359,4 +361,122 @@ textarea.study-input {
 .overall-chart__value {
   font-size: 28px;
   font-weight: 600;
+}
+
+.calendar__title {
+  margin: 0 0 12px;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.calendar-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  margin-bottom: 6px;
+}
+
+.calendar-weekdays span {
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.calendar-cell {
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  font: inherit;
+  cursor: default;
+  padding: 0;
+}
+
+button.calendar-cell {
+  cursor: pointer;
+}
+
+.calendar-cell--blank {
+  border: none;
+  background: transparent;
+}
+
+.calendar-cell__day {
+  font-size: 13px;
+  color: var(--text-primary);
+}
+
+.calendar-cell__mark {
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.calendar-cell--pending {
+  background: rgba(250, 178, 25, 0.2);
+  border-color: var(--status-warning);
+}
+
+.calendar-cell--pending .calendar-cell__mark {
+  color: var(--status-warning);
+}
+
+.calendar-cell--confirmed {
+  background: rgba(12, 163, 12, 0.16);
+  border-color: var(--status-good);
+}
+
+.calendar-cell--confirmed .calendar-cell__mark {
+  color: var(--status-good);
+}
+
+.calendar-cell--today {
+  box-shadow: 0 0 0 2px var(--accent) inset;
+}
+
+.calendar-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 14px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.calendar-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.calendar-swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  display: inline-block;
+  border: 1px solid var(--border);
+}
+
+.calendar-swatch--none {
+  background: var(--surface);
+}
+
+.calendar-swatch--pending {
+  background: var(--status-warning);
+  border-color: var(--status-warning);
+}
+
+.calendar-swatch--confirmed {
+  background: var(--status-good);
+  border-color: var(--status-good);
 }

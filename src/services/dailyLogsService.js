@@ -32,6 +32,7 @@ function fromSnap(snap) {
     subjects: subjectsMapToOrderedArray(data.subjects),
     plan: subjectsMapToOrderedArray(data.plan?.subjects),
     comment: data.comment ?? null,
+    attendanceConfirmed: data.attendanceConfirmed === true,
   };
 }
 
@@ -121,4 +122,12 @@ export async function saveTeacherRatings(studentId, date, percentsBySubject, com
     updates.comment = comment === '' ? null : comment;
   }
   await updateDoc(ref, updates);
+}
+
+// 선생님이 그 날짜의 "출석확인"(학생이 쓴 학습 계획 확인)을 완료 처리.
+// 학생이 계획을 다시 저장해도 이 필드는 건드리지 않는다 — 한 번 확인되면
+// 계획을 다시 쓴다고 자동으로 대기 상태로 돌아가지 않는다(단순한 설계).
+export async function confirmAttendance(studentId, date) {
+  const ref = doc(db, 'dailyLogs', logDocId(studentId, date));
+  await updateDoc(ref, { attendanceConfirmed: true, updatedAt: serverTimestamp() });
 }

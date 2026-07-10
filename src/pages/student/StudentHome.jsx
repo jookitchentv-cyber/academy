@@ -19,6 +19,9 @@ export default function StudentHome() {
         <li>
           <Link to="/student/exam">시험 대비</Link>
         </li>
+        <li>
+          <Link to="/student/attendance">출석확인</Link>
+        </li>
       </ul>
     </div>
   );
