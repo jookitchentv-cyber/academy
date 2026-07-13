@@ -18,6 +18,13 @@
   -webkit-tap-highlight-color: transparent;
 }
 
+img {
+  -webkit-user-drag: none;
+  user-drag: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
 html {
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
@@ -48,7 +55,8 @@ body {
   background-image: url('./assets/bg-watermark.png');
   background-repeat: no-repeat;
   background-position: center center;
-  background-size: 70%;
+  background-size: 300px;
+  background-attachment: fixed;
 }
 
 @media (max-width: 380px) {
