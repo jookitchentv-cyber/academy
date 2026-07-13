@@ -14,10 +14,12 @@ dist-ssr
 
 # Firebase
 .env
+token.txt
 .env.local
 .firebase/
 firebase-debug.log
 firestore-debug.log
+functions/.env
 
 # Editor directories and files
 .vscode/*

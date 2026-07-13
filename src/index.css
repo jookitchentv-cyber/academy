@@ -1,6 +1,6 @@
 :root {
-  --page-bg: #f9f9f7;
-  --surface: #fcfcfb;
+  --page-bg: #ffffff;
+  --surface: #ffffff;
   --chart-surface: #fcfcfb;
   --text-primary: #0b0b0b;
   --text-secondary: #52514e;
@@ -10,21 +10,7 @@
   --danger: #d03b3b;
   --status-good: #0ca30c;
   --status-warning: #fab219;
-  color-scheme: light dark;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --page-bg: #0d0d0d;
-    --surface: #1a1a19;
-    --chart-surface: #1a1a19;
-    --text-primary: #ffffff;
-    --text-secondary: #c3c2b7;
-    --text-muted: #898781;
-    --border: rgba(255, 255, 255, 0.1);
-    --accent: #3987e5;
-    --danger: #e66767;
-  }
+  color-scheme: only light;
 }
 
 * {
@@ -39,7 +25,7 @@ html {
 
 body {
   margin: 0;
-  background: var(--page-bg);
+  background: #d0d0ce;
   color: var(--text-primary);
   font-family: system-ui, -apple-system, 'Segoe UI', 'Noto Sans KR', Roboto, sans-serif;
 }
@@ -59,6 +45,10 @@ body {
   flex: 1;
   width: 100%;
   overflow-x: hidden;
+  background-image: url('./assets/bg-watermark.png');
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: 70%;
 }
 
 @media (max-width: 380px) {
@@ -128,6 +118,110 @@ body {
   text-decoration: none;
   font-size: 16px;
   cursor: pointer;
+}
+
+.login-hero {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 100px;
+  margin-top: 8px;
+}
+
+.login-logo {
+  height: 44px;
+  width: auto;
+  mix-blend-mode: multiply;
+}
+
+.login-subtitle {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.login-deco-img {
+  width: 130px;
+  position: absolute;
+  right: 0;
+  bottom: -100px;
+}
+
+.login-role-list button {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  text-align: left;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+}
+
+.role-icon-box {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: 1px solid var(--border);
+}
+
+.role-icon-box--student { background: none; }
+.role-icon-box--parent  { background: none; }
+.role-icon-box--teacher { background: none; }
+
+.role-icon-img {
+  width: 38px;
+  height: 38px;
+  object-fit: contain;
+  filter: brightness(1.1) saturate(1.4);
+}
+
+.role-text {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+}
+
+.role-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.role-subtitle {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.role-chevron {
+  color: var(--text-muted);
+  font-size: 22px;
+  line-height: 1;
+}
+
+.student-menu-list a {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+}
+
+.menu-icon-placeholder {
+  font-size: 24px;
+}
+
+.menu-icon-rounded {
+  width: 52px;
+  height: 52px;
+  object-fit: cover;
+  border-radius: 14px;
+  flex-shrink: 0;
+  filter: brightness(1.15) saturate(1.2);
 }
 
 .tabs {
@@ -223,6 +317,7 @@ textarea.study-input {
   padding: 14px;
   border-radius: 10px;
   border: 1px solid var(--border);
+  background: var(--surface);
   text-decoration: none;
   color: var(--text-primary);
 }
@@ -241,6 +336,7 @@ textarea.study-input {
   border-radius: 10px;
   padding: 12px 14px;
   margin-bottom: 10px;
+  background: var(--surface);
 }
 
 .subject-section h3 {
@@ -479,4 +575,50 @@ button.calendar-cell {
 .calendar-swatch--confirmed {
   background: var(--status-good);
   border-color: var(--status-good);
+}
+
+.parent-contact {
+  margin-top: 28px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+
+.parent-contact__label {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin: 0 0 10px;
+}
+
+.parent-contact__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.parent-contact__phone {
+  font-size: 16px;
+  color: var(--text-primary);
+}
+
+.parent-contact__edit {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.parent-contact__input {
+  width: 100%;
+  padding: 12px;
+  font-size: 16px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-primary);
+  letter-spacing: 1px;
+}
+
+.parent-contact__actions {
+  display: flex;
+  gap: 8px;
 }
