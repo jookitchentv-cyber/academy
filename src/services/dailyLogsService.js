@@ -21,6 +21,14 @@ import { FALLBACK_SUBJECT } from '../constants/subjects';
 
 const logDocId = (studentId, date) => studentId + '_' + date;
 
+const cache = new Map();
+const cacheKey = (type, ...args) => type + ':' + args.join(':');
+
+function invalidate(studentId, date) {
+  cache.delete(cacheKey('log', studentId, date));
+  cache.delete(cacheKey('list', studentId));
+}
+
 function fromSnap(snap) {
   if (!snap.exists()) return null;
   const data = snap.data();
@@ -38,8 +46,12 @@ function fromSnap(snap) {
 }
 
 export async function getDailyLog(studentId, date) {
+  const key = cacheKey('log', studentId, date);
+  if (cache.has(key)) return cache.get(key);
   const snap = await getDoc(doc(db, 'dailyLogs', logDocId(studentId, date)));
-  return fromSnap(snap);
+  const result = fromSnap(snap);
+  cache.set(key, result);
+  return result;
 }
 
 // 학생의 모든 기록을 최신 날짜순으로 반환. 문서 ID가 "studentId_YYYY-MM-DD"라
@@ -49,6 +61,8 @@ export async function getDailyLog(studentId, date) {
 // (레코드 수가 적은 개인용 앱이라 정렬 비용은 무시할 만함).
 // prefixEnd는 유니코드 사전순으로 prefix로 시작하는 모든 문자열보다 큰 상한값.
 export async function listDailyLogs(studentId) {
+  const key = cacheKey('list', studentId);
+  if (cache.has(key)) return cache.get(key);
   const prefix = studentId + '_';
   const prefixEnd = prefix + String.fromCharCode(0xf8ff);
   const q = query(
@@ -57,13 +71,16 @@ export async function listDailyLogs(studentId) {
     where(documentId(), '<', prefixEnd),
   );
   const snap = await getDocs(q);
-  return snap.docs.map(fromSnap).sort((a, b) => b.date.localeCompare(a.date));
+  const result = snap.docs.map(fromSnap).sort((a, b) => b.date.localeCompare(a.date));
+  cache.set(key, result);
+  return result;
 }
 
 // 학생이 오늘 "실제로 한" 학습량을 저장(금일 학습량). 같은 날 재저장 시 이미 매겨진
 // percent는 과목명 기준으로 보존한다(선생님이 먼저 채점했는데 학생이 다시 저장해도
 // 안 날아가게). merge:true로 써서 같은 문서의 plan/comment 필드를 건드리지 않는다.
 export async function saveStudentEntry(studentId, date, rawText) {
+  invalidate(studentId, date);
   const parsed = parseSubjects(rawText);
   const ref = doc(db, 'dailyLogs', logDocId(studentId, date));
   const existing = await getDoc(ref);
@@ -92,6 +109,7 @@ export async function saveStudentEntry(studentId, date, rawText) {
 // plan 필드 아래에 따로 저장하고, 채점 대상이 아니므로 percent는 두지 않는다.
 // merge:true로 써서 같은 문서의 subjects/comment 필드를 건드리지 않는다.
 export async function saveStudentPlan(studentId, date, rawText) {
+  invalidate(studentId, date);
   const parsed = parseSubjects(rawText);
   const ref = doc(db, 'dailyLogs', logDocId(studentId, date));
 
@@ -114,6 +132,7 @@ export async function saveStudentPlan(studentId, date, rawText) {
 // 각 필드만 원자적으로 갱신(배열/문서 전체를 읽고 다시 쓰지 않음). comment가 undefined면
 // 건드리지 않고, 빈 문자열/null이면 지운다.
 export async function saveTeacherRatings(studentId, date, percentsBySubject, comment) {
+  invalidate(studentId, date);
   const ref = doc(db, 'dailyLogs', logDocId(studentId, date));
   const updates = { updatedAt: serverTimestamp() };
   for (const [subject, percent] of Object.entries(percentsBySubject)) {
@@ -129,6 +148,7 @@ export async function saveTeacherRatings(studentId, date, percentsBySubject, com
 // 학생이 계획을 다시 저장해도 이 필드는 건드리지 않는다 — 한 번 확인되면
 // 계획을 다시 쓴다고 자동으로 대기 상태로 돌아가지 않는다(단순한 설계).
 export async function confirmAttendance(studentId, date) {
+  invalidate(studentId, date);
   const ref = doc(db, 'dailyLogs', logDocId(studentId, date));
   await updateDoc(ref, { attendanceConfirmed: true, updatedAt: serverTimestamp() });
 }

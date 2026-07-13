@@ -52,11 +52,29 @@ body {
   flex: 1;
   width: 100%;
   overflow-x: hidden;
+  position: relative;
+}
+
+.page::before {
+  content: '';
+  position: absolute;
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 300px;
+  height: 300px;
   background-image: url('./assets/bg-watermark.png');
   background-repeat: no-repeat;
-  background-position: center center;
-  background-size: 300px;
-  background-attachment: fixed;
+  background-size: contain;
+  background-position: center;
+  pointer-events: none;
+  z-index: 0;
+}
+
+@media (min-width: 481px) {
+  .page::before {
+    opacity: 0.4;
+  }
 }
 
 @media (max-width: 380px) {
@@ -126,6 +144,7 @@ body {
   text-decoration: none;
   font-size: 16px;
   cursor: pointer;
+  position: relative;
 }
 
 .login-hero {
@@ -278,6 +297,7 @@ textarea.study-input {
   font-size: 16px; /* 16px 미만이면 iOS Safari가 포커스 시 자동 확대함 */
   font-family: inherit;
   resize: vertical;
+  position: relative;
 }
 
 .hint {
@@ -296,6 +316,7 @@ textarea.study-input {
   font-size: 15px;
   cursor: pointer;
   width: 100%;
+  position: relative;
 }
 
 @media (min-width: 420px) {
@@ -328,6 +349,7 @@ textarea.study-input {
   background: var(--surface);
   text-decoration: none;
   color: var(--text-primary);
+  position: relative;
 }
 
 .log-list .log-date {
@@ -345,6 +367,7 @@ textarea.study-input {
   padding: 12px 14px;
   margin-bottom: 10px;
   background: var(--surface);
+  position: relative;
 }
 
 .subject-section h3 {
@@ -433,6 +456,7 @@ textarea.study-input {
   flex-direction: column;
   gap: 12px;
   margin-top: 40px;
+  position: relative;
 }
 
 .login-form input {
