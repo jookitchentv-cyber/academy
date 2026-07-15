@@ -208,6 +208,15 @@ body {
   line-height: 1;
 }
 
+.student-home-page {
+  background: #f2f2f2;
+}
+
+.student-home-page .student-menu-list a {
+  background: #f2f2f2;
+  border-color: rgba(180, 150, 100, 0.15);
+}
+
 .student-menu-list a {
   display: flex;
   align-items: center;

@@ -8,7 +8,7 @@ export default function StudentHome() {
   const { session, logout } = useAuth();
 
   return (
-    <div className="page">
+    <div className="page student-home-page">
       <div className="page-header">
         <h1>{session?.name ?? '학생'}님</h1>
         <button className="logout-button" onClick={logout}>
