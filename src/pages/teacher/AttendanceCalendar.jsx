@@ -54,7 +54,9 @@ export default function TeacherAttendanceCalendar() {
     try {
       await confirmAttendance(studentId, selectedDate);
       await loadMonth();
-      setDetail((prev) => (prev ? { ...prev, attendanceConfirmed: true } : prev));
+      setDetail((prev) =>
+        prev ? { ...prev, attendanceConfirmedAt: new Date() } : prev
+      );
     } finally {
       setConfirming(false);
     }
@@ -84,21 +86,20 @@ export default function TeacherAttendanceCalendar() {
               {detail === null && <p className="subject-section__raw">해당 날짜 기록이 없습니다.</p>}
               {detail && (
                 <>
-                  {detail.plan.length > 0 ? (
-                    detail.plan.map((p) => (
-                      <p className="subject-section__plan" key={p.subject}>
-                        {p.subject}: {p.rawText}
-                      </p>
-                    ))
-                  ) : (
-                    <p className="subject-section__raw">계획을 작성하지 않았습니다.</p>
+                  {selectedStatus === 'none' && (
+                    <p className="subject-section__raw">출석 요청이 없는 날짜입니다.</p>
                   )}
                   {selectedStatus === 'pending' && (
-                    <button className="primary-button" style={{ marginTop: 10 }} onClick={handleConfirm} disabled={confirming}>
-                      {confirming ? '처리 중...' : '확인 처리'}
-                    </button>
+                    <>
+                      <p className="subject-section__raw">학생이 출석 버튼을 눌렀습니다.</p>
+                      <button className="primary-button" style={{ marginTop: 10 }} onClick={handleConfirm} disabled={confirming}>
+                        {confirming ? '처리 중...' : '출석 확인'}
+                      </button>
+                    </>
                   )}
-                  {selectedStatus === 'confirmed' && <p className="state-message">확인 완료된 날짜입니다.</p>}
+                  {selectedStatus === 'confirmed' && (
+                    <p className="state-message">출석 확인 완료 — 부모님께 등원 알림이 발송되었습니다.</p>
+                  )}
                 </>
               )}
             </div>

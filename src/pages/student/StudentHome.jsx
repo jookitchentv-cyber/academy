@@ -1,11 +1,37 @@
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { getDailyLog, requestAttendance } from '../../services/dailyLogsService';
+import { getAttendanceStatus } from '../../utils/attendance';
+import { todayString } from '../../utils/date';
 import iconDaily from '../../assets/icon-daily.png';
 import iconExam from '../../assets/icon-exam.png';
 import iconAttendance from '../../assets/icon-attendance.png';
 
 export default function StudentHome() {
   const { session, logout } = useAuth();
+  const [attendanceStatus, setAttendanceStatus] = useState('none');
+  const [requesting, setRequesting] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    getDailyLog(session.studentId, todayString())
+      .then((log) => {
+        if (!cancelled) setAttendanceStatus(getAttendanceStatus(log));
+      })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [session.studentId]);
+
+  async function handleAttendance() {
+    setRequesting(true);
+    try {
+      await requestAttendance(session.studentId, todayString());
+      setAttendanceStatus('pending');
+    } finally {
+      setRequesting(false);
+    }
+  }
 
   return (
     <div className="page student-home-page">
@@ -15,6 +41,29 @@ export default function StudentHome() {
           로그아웃
         </button>
       </div>
+
+      <div className="attendance-banner">
+        {attendanceStatus === 'none' && (
+          <button
+            className="primary-button attendance-button"
+            onClick={handleAttendance}
+            disabled={requesting}
+          >
+            {requesting ? '처리 중...' : '출석 체크'}
+          </button>
+        )}
+        {attendanceStatus === 'pending' && (
+          <div className="attendance-status attendance-status--pending">
+            출석 확인 중... (선생님 승인 대기)
+          </div>
+        )}
+        {attendanceStatus === 'confirmed' && (
+          <div className="attendance-status attendance-status--confirmed">
+            ✓ 오늘 출석이 확인되었습니다
+          </div>
+        )}
+      </div>
+
       <ul className="menu-list student-menu-list">
         <li>
           <Link to="/student/daily">

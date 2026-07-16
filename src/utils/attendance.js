@@ -1,8 +1,9 @@
-// 출석확인 상태는 별도 컬렉션 없이 dailyLogs 문서에서 그대로 파생시킨다:
-// - plan을 아예 안 썼으면 'none'
-// - plan은 있는데 선생님이 아직 확인 안 했으면 'pending'
-// - 선생님이 확인 처리했으면 'confirmed'
+// 출석 상태는 dailyLogs 문서에서 파생한다:
+// - attendanceRequestedAt 없음 → 'none' (출석 버튼 미클릭)
+// - attendanceRequestedAt 있고 attendanceConfirmedAt 없음 → 'pending' (선생님 확인 대기)
+// - attendanceConfirmedAt 있음 → 'confirmed' (선생님 확인 완료)
 export function getAttendanceStatus(log) {
-  if (!log || !log.plan || log.plan.length === 0) return 'none';
-  return log.attendanceConfirmed ? 'confirmed' : 'pending';
+  if (!log || !log.attendanceRequestedAt) return 'none';
+  if (!log.attendanceConfirmedAt) return 'pending';
+  return 'confirmed';
 }

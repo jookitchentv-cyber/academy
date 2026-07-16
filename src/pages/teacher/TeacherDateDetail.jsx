@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
+import { httpsCallable } from 'firebase/functions';
 import { getDailyLog, saveTeacherRatings } from '../../services/dailyLogsService';
+import { functions } from '../../firebase/config';
 import { formatDateLabel } from '../../utils/date';
 import { FALLBACK_SUBJECT } from '../../constants/subjects';
 import { mergeSubjectsWithPlan } from '../../utils/subjectsMap';
@@ -23,6 +25,7 @@ export default function TeacherDateDetail() {
   const [inputs, setInputs] = useState({});
   const [comment, setComment] = useState('');
   const [saveStatus, setSaveStatus] = useState('idle'); // idle | saving | saved | error
+  const [sendStatus, setSendStatus] = useState('idle'); // idle | sending | sent | error
 
   useEffect(() => {
     let cancelled = false;
@@ -78,6 +81,19 @@ export default function TeacherDateDetail() {
       setSaveStatus('saved');
     } catch {
       setSaveStatus('error');
+    }
+  }
+
+  async function handleSendReport() {
+    setSendStatus('sending');
+    try {
+      const sendDailyReport = httpsCallable(functions, 'sendDailyReport');
+      await sendDailyReport({ studentId, date });
+      setSendStatus('sent');
+      setLog((prev) => prev ? { ...prev, reportSentAt: new Date() } : prev);
+    } catch (e) {
+      console.error(e);
+      setSendStatus('error');
     }
   }
 
@@ -153,6 +169,33 @@ export default function TeacherDateDetail() {
       </button>
       {saveStatus === 'saved' && <p className="state-message">저장되었습니다.</p>}
       {saveStatus === 'error' && <p className="state-message state-message--error">저장에 실패했습니다.</p>}
+
+      <div className="subject-section" style={{ marginTop: 24 }}>
+        <h3>부모님께 하원 보고 전송</h3>
+        {log.reportSentAt ? (
+          <p className="state-message">이미 전송된 날짜입니다.</p>
+        ) : (
+          <>
+            <p className="hint" style={{ marginBottom: 8 }}>
+              피드백 저장 후 전송하세요. 하원 시간·학습목표·학습량·피드백이 함께 발송됩니다.
+            </p>
+            <button
+              className="primary-button"
+              onClick={handleSendReport}
+              disabled={sendStatus === 'sending' || !log.departureTime || !comment.trim()}
+            >
+              {sendStatus === 'sending' ? '전송 중...' : '부모님께 전송'}
+            </button>
+            {!log.departureTime && (
+              <p className="hint" style={{ marginTop: 6 }}>학생이 아직 학습량을 저장하지 않았습니다.</p>
+            )}
+            {sendStatus === 'sent' && <p className="state-message">전송이 완료되었습니다.</p>}
+            {sendStatus === 'error' && (
+              <p className="state-message state-message--error">전송에 실패했습니다. 피드백이 저장되어 있는지 확인해주세요.</p>
+            )}
+          </>
+        )}
+      </div>
     </div>
   );
 }

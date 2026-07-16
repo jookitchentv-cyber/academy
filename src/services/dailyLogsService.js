@@ -41,7 +41,10 @@ function fromSnap(snap) {
     plan: subjectsMapToOrderedArray(data.plan?.subjects),
     planRawText: data.plan?.rawText ?? '',
     comment: data.comment ?? null,
-    attendanceConfirmed: data.attendanceConfirmed === true,
+    attendanceRequestedAt: data.attendanceRequestedAt ?? null,
+    attendanceConfirmedAt: data.attendanceConfirmedAt ?? null,
+    departureTime: data.departureTime ?? null,
+    reportSentAt: data.reportSentAt ?? null,
   };
 }
 
@@ -79,6 +82,7 @@ export async function listDailyLogs(studentId) {
 // 학생이 오늘 "실제로 한" 학습량을 저장(금일 학습량). 같은 날 재저장 시 이미 매겨진
 // percent는 과목명 기준으로 보존한다(선생님이 먼저 채점했는데 학생이 다시 저장해도
 // 안 날아가게). merge:true로 써서 같은 문서의 plan/comment 필드를 건드리지 않는다.
+// 저장 시각 = 하원 시간으로 기록한다(departureTime).
 export async function saveStudentEntry(studentId, date, rawText) {
   invalidate(studentId, date);
   const parsed = parseSubjects(rawText);
@@ -99,6 +103,7 @@ export async function saveStudentEntry(studentId, date, rawText) {
       date,
       rawText,
       subjects: subjectsArrayToMap(merged),
+      departureTime: serverTimestamp(),
       updatedAt: serverTimestamp(),
     },
     { merge: true }
@@ -144,11 +149,25 @@ export async function saveTeacherRatings(studentId, date, percentsBySubject, com
   await updateDoc(ref, updates);
 }
 
-// 선생님이 그 날짜의 "출석확인"(학생이 쓴 학습 계획 확인)을 완료 처리.
-// 학생이 계획을 다시 저장해도 이 필드는 건드리지 않는다 — 한 번 확인되면
-// 계획을 다시 쓴다고 자동으로 대기 상태로 돌아가지 않는다(단순한 설계).
+// 학생이 출석 버튼을 눌렀을 때 호출. attendanceRequestedAt 기록.
+export async function requestAttendance(studentId, date) {
+  invalidate(studentId, date);
+  const ref = doc(db, 'dailyLogs', logDocId(studentId, date));
+  await setDoc(
+    ref,
+    {
+      studentId,
+      date,
+      attendanceRequestedAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    },
+    { merge: true }
+  );
+}
+
+// 선생님이 출석을 확인할 때 호출. attendanceConfirmedAt 기록 → Cloud Function이 등원 알림 발송.
 export async function confirmAttendance(studentId, date) {
   invalidate(studentId, date);
   const ref = doc(db, 'dailyLogs', logDocId(studentId, date));
-  await updateDoc(ref, { attendanceConfirmed: true, updatedAt: serverTimestamp() });
+  await updateDoc(ref, { attendanceConfirmedAt: serverTimestamp(), updatedAt: serverTimestamp() });
 }
