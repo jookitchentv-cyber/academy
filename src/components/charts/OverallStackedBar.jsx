@@ -1,4 +1,4 @@
-import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, Legend, ResponsiveContainer } from 'recharts';
 import { getSubjectColor } from '../../constants/colors';
 import { computeOverallPercent } from '../../utils/computeOverallPercent';
 
@@ -25,6 +25,7 @@ export default function OverallStackedBar({ subjects }) {
         <BarChart data={[row]} layout="vertical" margin={{ top: 4, right: 8, bottom: 4, left: 8 }}>
           <XAxis type="number" domain={[0, 100]} hide />
           <YAxis type="category" dataKey="name" hide />
+          <Legend wrapperStyle={{ fontSize: 12, color: 'var(--text-secondary)', whiteSpace: 'normal', lineHeight: '1.8' }} />
           {subjects.map((s) => (
             <Bar
               key={s.subject}
