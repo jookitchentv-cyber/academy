@@ -116,15 +116,17 @@ export default function StudyTextInput({ mode }) {
         </div>
       )}
 
-      <button
-        className="primary-button"
-        onClick={handleSave}
-        disabled={status === 'saving' || !hasContent}
-      >
-        {status === 'saving' ? '저장 중...' : '저장'}
-      </button>
-      {status === 'saved' && <p className="state-message">{savedMessage}</p>}
-      {status === 'error' && <p className="state-message state-message--error">저장에 실패했습니다. 다시 시도해주세요.</p>}
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+        <button
+          className="primary-button"
+          onClick={handleSave}
+          disabled={status === 'saving' || !hasContent}
+        >
+          {status === 'saving' ? '저장 중...' : '저장'}
+        </button>
+        {status === 'saved' && <p className="state-message">{savedMessage}</p>}
+        {status === 'error' && <p className="state-message state-message--error">저장에 실패했습니다. 다시 시도해주세요.</p>}
+      </div>
     </div>
   );
 }

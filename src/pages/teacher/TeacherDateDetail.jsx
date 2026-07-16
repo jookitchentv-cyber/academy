@@ -164,11 +164,13 @@ export default function TeacherDateDetail() {
         />
       </div>
 
-      <button className="primary-button" onClick={handleSave} disabled={saveStatus === 'saving'}>
-        {saveStatus === 'saving' ? '저장 중...' : '저장'}
-      </button>
-      {saveStatus === 'saved' && <p className="state-message">저장되었습니다.</p>}
-      {saveStatus === 'error' && <p className="state-message state-message--error">저장에 실패했습니다.</p>}
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+        <button className="primary-button" onClick={handleSave} disabled={saveStatus === 'saving'}>
+          {saveStatus === 'saving' ? '저장 중...' : '저장'}
+        </button>
+        {saveStatus === 'saved' && <p className="state-message">저장되었습니다.</p>}
+        {saveStatus === 'error' && <p className="state-message state-message--error">저장에 실패했습니다.</p>}
+      </div>
 
       <div className="subject-section" style={{ marginTop: 24 }}>
         <h3>부모님께 하원 보고 전송</h3>
