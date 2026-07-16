@@ -11,12 +11,7 @@ import {
   getDocs,
 } from 'firebase/firestore';
 import { db } from '../firebase/config';
-import { parseSubjects } from '../utils/parseSubjects';
-import {
-  subjectsArrayToMap,
-  subjectsMapToOrderedArray,
-  planSubjectsToMap,
-} from '../utils/subjectsMap';
+import { subjectsMapToOrderedArray } from '../utils/subjectsMap';
 import { FALLBACK_SUBJECT } from '../constants/subjects';
 
 const logDocId = (studentId, date) => studentId + '_' + date;
@@ -79,56 +74,58 @@ export async function listDailyLogs(studentId) {
   return result;
 }
 
-// 학생이 오늘 "실제로 한" 학습량을 저장(금일 학습량). 같은 날 재저장 시 이미 매겨진
-// percent는 과목명 기준으로 보존한다(선생님이 먼저 채점했는데 학생이 다시 저장해도
-// 안 날아가게). merge:true로 써서 같은 문서의 plan/comment 필드를 건드리지 않는다.
-// 저장 시각 = 하원 시간으로 기록한다(departureTime).
-export async function saveStudentEntry(studentId, date, rawText) {
+// 과목 선택 UI → 학습량 저장. parser 없이 selections에서 직접 subjects map 구성.
+// 재저장 시 선생님이 이미 매긴 percent는 과목명 기준으로 보존한다.
+// 저장 시각 = 하원 시간(departureTime)으로 함께 기록한다.
+export async function saveStudentEntry(studentId, date, selections) {
   invalidate(studentId, date);
-  const parsed = parseSubjects(rawText);
   const ref = doc(db, 'dailyLogs', logDocId(studentId, date));
   const existing = await getDoc(ref);
   const existingSubjects = existing.exists() ? existing.data().subjects ?? {} : {};
 
-  const merged = parsed.map((s) => {
-    if (s.subject === FALLBACK_SUBJECT) return s;
-    const prior = existingSubjects[s.subject];
-    return { ...s, percent: typeof prior?.percent === 'number' ? prior.percent : null };
-  });
+  const rawText = Object.entries(selections)
+    .filter(([, text]) => text.trim())
+    .map(([subject, text]) => subject === FALLBACK_SUBJECT ? text : `${subject} ${text}`)
+    .join('\n');
+
+  const subjectsMap = {};
+  for (const [subject, text] of Object.entries(selections)) {
+    if (!text.trim()) continue;
+    const prior = existingSubjects[subject];
+    subjectsMap[subject] = {
+      rawText: text,
+      ...(subject !== FALLBACK_SUBJECT && {
+        percent: typeof prior?.percent === 'number' ? prior.percent : null,
+      }),
+    };
+  }
 
   await setDoc(
     ref,
-    {
-      studentId,
-      date,
-      rawText,
-      subjects: subjectsArrayToMap(merged),
-      departureTime: serverTimestamp(),
-      updatedAt: serverTimestamp(),
-    },
+    { studentId, date, rawText, subjects: subjectsMap, departureTime: serverTimestamp(), updatedAt: serverTimestamp() },
     { merge: true }
   );
 }
 
-// 학생이 오늘 "계획한" 학습 내용을 저장(금일 학습 계획). 학습량과는 별개 데이터라
-// plan 필드 아래에 따로 저장하고, 채점 대상이 아니므로 percent는 두지 않는다.
-// merge:true로 써서 같은 문서의 subjects/comment 필드를 건드리지 않는다.
-export async function saveStudentPlan(studentId, date, rawText) {
+// 과목 선택 UI → 학습 계획 저장. percent 없음(채점 대상 아님).
+export async function saveStudentPlan(studentId, date, selections) {
   invalidate(studentId, date);
-  const parsed = parseSubjects(rawText);
   const ref = doc(db, 'dailyLogs', logDocId(studentId, date));
+
+  const rawText = Object.entries(selections)
+    .filter(([, text]) => text.trim())
+    .map(([subject, text]) => subject === FALLBACK_SUBJECT ? text : `${subject} ${text}`)
+    .join('\n');
+
+  const subjectsMap = {};
+  for (const [subject, text] of Object.entries(selections)) {
+    if (!text.trim()) continue;
+    subjectsMap[subject] = { rawText: text };
+  }
 
   await setDoc(
     ref,
-    {
-      studentId,
-      date,
-      plan: {
-        rawText,
-        subjects: planSubjectsToMap(parsed),
-      },
-      updatedAt: serverTimestamp(),
-    },
+    { studentId, date, plan: { rawText, subjects: subjectsMap }, updatedAt: serverTimestamp() },
     { merge: true }
   );
 }

@@ -303,6 +303,59 @@ body {
   font-weight: 600;
 }
 
+.subject-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.subject-chip {
+  padding: 8px 16px;
+  border-radius: 20px;
+  border: 1.5px solid var(--border);
+  background: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  color: #555;
+}
+
+.subject-chip--active {
+  background: var(--primary, #6b5c45);
+  color: #fff;
+  border-color: var(--primary, #6b5c45);
+}
+
+.subject-chips-hint {
+  text-align: center;
+  padding: 24px 0;
+}
+
+.subject-inputs {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.subject-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.subject-input-label {
+  font-size: 14px;
+  font-weight: 700;
+  color: #444;
+}
+
+.subject-input-group textarea.study-input {
+  min-height: 80px;
+}
+
 textarea.study-input {
   width: 100%;
   min-height: 160px;
