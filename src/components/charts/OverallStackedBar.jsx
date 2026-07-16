@@ -21,11 +21,12 @@ export default function OverallStackedBar({ subjects }) {
         <span className="overall-chart__label">전체</span>
         <span className="overall-chart__value">{overall === null ? '미평가' : `${overall}%`}</span>
       </div>
-      <ResponsiveContainer width="100%" height={64}>
+      <ResponsiveContainer width="100%" height={64} style={{ overflow: 'visible' }}>
         <BarChart data={[row]} layout="vertical" margin={{ top: 4, right: 8, bottom: 4, left: 8 }}>
           <XAxis type="number" domain={[0, 100]} hide />
           <YAxis type="category" dataKey="name" hide />
           <Tooltip
+            wrapperStyle={{ zIndex: 100 }}
             formatter={(value, name) => {
               const s = subjects.find((x) => x.subject === name);
               const label = typeof s?.percent === 'number' ? `${s.percent}%` : '미평가';

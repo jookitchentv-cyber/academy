@@ -32,7 +32,7 @@ html {
 
 body {
   margin: 0;
-  background: #d0d0ce;
+  background: #b0b0b0;
   color: var(--text-primary);
   font-family: system-ui, -apple-system, 'Segoe UI', 'Noto Sans KR', Roboto, sans-serif;
 }
@@ -42,7 +42,7 @@ body {
   width: 100%;
   margin: 0 auto;
   min-height: 100vh;
-  background: var(--surface);
+  background: #f0f0f0;
   display: flex;
   flex-direction: column;
 }
@@ -66,7 +66,10 @@ body {
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  margin-bottom: 16px;
+  margin: -20px -20px 16px;
+  padding: 0 20px;
+  min-height: 70px;
+  background: #ffffff;
 }
 
 .page-header h1 {
@@ -78,7 +81,7 @@ body {
 .back-link {
   display: inline-flex;
   align-items: center;
-  min-height: 40px;
+  min-height: 38px;
   padding: 8px 4px;
   margin: -8px -4px;
   color: var(--text-secondary);
@@ -90,7 +93,7 @@ body {
 .logout-button,
 .button-secondary {
   background: none;
-  border: 1px solid var(--border);
+  border: 1px solid #222;
   color: var(--text-secondary);
   border-radius: 8px;
   padding: 8px 14px;
@@ -130,8 +133,21 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 100px;
-  margin-top: 8px;
+  margin: -20px -20px 100px;
+  padding: 7px 20px;
+  background: #ffffff;
+}
+
+.login-logo-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.login-logo-horse {
+  height: 56px;
+  width: auto;
+  mix-blend-mode: multiply;
 }
 
 .login-logo {
@@ -157,6 +173,7 @@ body {
   display: flex;
   align-items: center;
   gap: 14px;
+  border-color: #222;
   text-align: left;
   padding: 16px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.07);
@@ -170,7 +187,7 @@ body {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  border: 1px solid var(--border);
+  border: 1px solid #222;
 }
 
 .role-icon-box--student { background: none; }
@@ -199,7 +216,7 @@ body {
 
 .role-subtitle {
   font-size: 13px;
-  color: var(--text-muted);
+  color: var(--text-secondary);
 }
 
 .role-chevron {
@@ -213,18 +230,22 @@ body {
 }
 
 .attendance-banner {
-  margin: 0 0 16px;
+  margin: 0 8px 16px;
 }
 
 .attendance-button {
-  width: 100%;
+  width: 100% !important;
   font-size: 17px;
-  padding: 14px;
+  padding: 13px 14px;
+  border: 1px solid transparent;
 }
 
 .attendance-status {
-  text-align: center;
-  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 46px;
+  padding: 0 16px;
   border-radius: 10px;
   font-size: 15px;
   font-weight: 600;
@@ -242,9 +263,13 @@ body {
   border: 1px solid #a5d6a7;
 }
 
+.student-home-page .student-menu-list {
+  margin: 0 8px;
+}
+
 .student-home-page .student-menu-list a {
-  background: #f2f2f2;
-  border-color: rgba(180, 150, 100, 0.15);
+  background: #ffffff;
+  border-color: #222;
 }
 
 .student-menu-list a {
@@ -262,10 +287,9 @@ body {
 .menu-icon-rounded {
   width: 52px;
   height: 52px;
-  object-fit: cover;
-  border-radius: 14px;
+  object-fit: contain;
   flex-shrink: 0;
-  filter: brightness(1.15) saturate(1.2);
+  mix-blend-mode: multiply;
 }
 
 .tabs {
