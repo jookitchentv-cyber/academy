@@ -4,6 +4,8 @@ import { useAuth } from '../../context/AuthContext';
 import { listAnnouncementsForTeacher } from '../../services/announcementsService';
 import { todayString } from '../../utils/date';
 import { listStudents } from '../../services/studentsService';
+import { getDailyLog } from '../../services/dailyLogsService';
+import { getAttendanceStatus } from '../../utils/attendance';
 import Loading from '../../components/common/Loading';
 import EmptyState from '../../components/common/EmptyState';
 import ErrorMessage from '../../components/common/ErrorMessage';
@@ -13,19 +15,27 @@ export default function TeacherHome() {
   const [students, setStudents] = useState(null);
   const [error, setError] = useState('');
   const [todayAnnouncement, setTodayAnnouncement] = useState(null);
+  const [pendingSet, setPendingSet] = useState(new Set());
 
   useEffect(() => {
     let cancelled = false;
+    const today = todayString();
     Promise.all([
       listStudents(),
       listAnnouncementsForTeacher(session.teacherId),
     ])
       .then(([data, announcements]) => {
-        if (!cancelled) {
-          setStudents(data);
-          const today = todayString();
-          setTodayAnnouncement(announcements.find((a) => a.date === today) ?? null);
-        }
+        if (cancelled) return;
+        setStudents(data);
+        setTodayAnnouncement(announcements.find((a) => a.date === today) ?? null);
+        Promise.all(data.map((s) => getDailyLog(s.studentId, today).catch(() => null)))
+          .then((logs) => {
+            if (cancelled) return;
+            const pending = new Set(
+              data.filter((s, i) => getAttendanceStatus(logs[i]) === 'pending').map((s) => s.studentId)
+            );
+            setPendingSet(pending);
+          });
       })
       .catch(() => {
         if (!cancelled) setError('학생 목록을 불러오지 못했습니다.');
@@ -64,6 +74,9 @@ export default function TeacherHome() {
               <Link to={`/teacher/students/${s.studentId}`}>
                 {s.name}
                 {s.grade && <span className="student-list-grade">{s.grade}</span>}
+                {pendingSet.has(s.studentId) && (
+                  <span className="attendance-pending-badge">출석 대기</span>
+                )}
               </Link>
               <Link to={`/teacher/edit-student/${s.studentId}`} className="student-list-edit">
                 수정
