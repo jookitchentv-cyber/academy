@@ -114,8 +114,7 @@ body {
 
 .menu-list a,
 .menu-list button {
-  display: flex;
-  align-items: center;
+  display: block;
   width: 100%;
   text-align: left;
   padding: 16px;
