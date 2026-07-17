@@ -7,7 +7,7 @@ export default function DailyStudyLayout() {
         <Link to="/student" className="back-link">
           ← 뒤로
         </Link>
-        <h1>일상 공부</h1>
+        <h1 style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', margin: 0 }}>일상 공부</h1>
         <span />
       </div>
       <nav className="tabs">

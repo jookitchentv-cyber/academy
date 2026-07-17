@@ -31,6 +31,7 @@ export default function AttendanceCalendar() {
   const [allLogs, setAllLogs] = useState(null);
   const [allAnnouncements, setAllAnnouncements] = useState([]);
   const [error, setError] = useState('');
+  const [selectedDate, setSelectedDate] = useState(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -60,6 +61,14 @@ export default function AttendanceCalendar() {
   const statusByDate = allLogs ? buildStatusMap(allLogs, year, month) : null;
   const announcementsByDate = filterAnnouncementMap(allAnnouncements, year, month);
 
+  function handleDayClick(date) {
+    setSelectedDate((prev) => prev === date ? null : date);
+  }
+
+  const selectedAnnounce = selectedDate ? announcementsByDate.get(selectedDate) : null;
+  const selectedStatus = selectedDate ? statusByDate?.get(selectedDate) ?? 'none' : null;
+  const ANNOUNCE_LABEL = { cancel: '휴강', time_change: '수업시간 변경' };
+
   return (
     <div className="page">
       <div className="page-header">
@@ -70,14 +79,31 @@ export default function AttendanceCalendar() {
       {error && <ErrorMessage>{error}</ErrorMessage>}
       {!error && statusByDate === null && <Loading />}
       {!error && statusByDate && (
-        <MonthCalendar
-          year={year}
-          month={month}
-          statusByDate={statusByDate}
-          announcementsByDate={announcementsByDate}
-          onPrev={prevMonth}
-          onNext={nextMonth}
-        />
+        <>
+          <MonthCalendar
+            year={year}
+            month={month}
+            statusByDate={statusByDate}
+            announcementsByDate={announcementsByDate}
+            onPrev={prevMonth}
+            onNext={nextMonth}
+            onDayClick={handleDayClick}
+          />
+          {selectedDate && (
+            <div className="subject-section" style={{ marginTop: 16 }}>
+              <h3>{selectedDate}</h3>
+              {selectedStatus === 'pending' && <p className="subject-section__raw">출석 확인 대기 중입니다.</p>}
+              {selectedStatus === 'confirmed' && <p className="state-message">✓ 출석 확인 완료</p>}
+              {selectedStatus === 'none' && !selectedAnnounce && <p className="subject-section__raw">출석 기록이 없는 날짜입니다.</p>}
+              {selectedAnnounce && (
+                <p className="subject-section__raw" style={{ marginTop: 8 }}>
+                  📢 {ANNOUNCE_LABEL[selectedAnnounce.type]}
+                  {selectedAnnounce.note ? ` — ${selectedAnnounce.note}` : ''}
+                </p>
+              )}
+            </div>
+          )}
+        </>
       )}
     </div>
   );

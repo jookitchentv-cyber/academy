@@ -101,7 +101,7 @@ export default function StudyTextInput({ mode }) {
       </div>
 
       {activeSubjects.length === 0 ? (
-        <p className="hint subject-chips-hint">과목을 탭해서 선택하세요</p>
+        <p className="hint subject-chips-hint" style={{ fontSize: 16, color: 'var(--text-secondary)' }}>과목을 탭해서 선택하세요</p>
       ) : (
         <div className="subject-inputs">
           {activeSubjects.map((subject) => (

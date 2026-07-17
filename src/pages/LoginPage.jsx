@@ -10,15 +10,7 @@ import iconTeacher from '../assets/icon-teacher.png';
 
 const ROLE_HOME = { student: '/student', teacher: '/teacher', parent: '/parent' };
 const NAME_PLACEHOLDER = { student: '학생 이름', parent: '자녀 이름' };
-
-function PersonIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="white" width="22" height="22" aria-hidden="true">
-      <circle cx="12" cy="8" r="4" />
-      <path d="M4 20c0-3.5 3.6-6 8-6s8 2.5 8 6" />
-    </svg>
-  );
-}
+const ROLE_LABEL = { student: '학생 로그인', parent: '학부모 로그인', teacher: '선생님 로그인' };
 
 export default function LoginPage() {
   const [role, setRole] = useState(null);
@@ -31,6 +23,13 @@ export default function LoginPage() {
 
   function chooseRole(nextRole) {
     setRole(nextRole);
+    setName('');
+    setCode('');
+    setError('');
+  }
+
+  function closePopup() {
+    setRole(null);
     setName('');
     setCode('');
     setError('');
@@ -63,94 +62,88 @@ export default function LoginPage() {
 
   return (
     <div className="page">
-      {role === null && (
-        <>
-          <div className="login-hero">
-            <img src={logoHwarang} alt="화랑 Hwarang Mentoring" className="login-logo-hwarang" />
-            <img src={bookDeco} alt="" aria-hidden="true" className="login-deco-img" />
-          </div>
+      <div className="login-hero">
+        <img src={logoHwarang} alt="화랑 Hwarang Mentoring" className="login-logo-hwarang" />
+        <img src={bookDeco} alt="" aria-hidden="true" className="login-deco-img" />
+      </div>
 
-          <ul className="menu-list login-role-list">
-            <li>
-              <button type="button" onClick={() => chooseRole('student')}>
-                <span className="role-icon-box role-icon-box--student">
-                  <img src={iconStudent} alt="" className="role-icon-img" />
-                </span>
-                <span className="role-text">
-                  <span className="role-title">학생으로 로그인</span>
-                </span>
-                <span className="role-chevron">›</span>
-              </button>
-            </li>
-            <li>
-              <button type="button" onClick={() => chooseRole('parent')}>
-                <span className="role-icon-box role-icon-box--parent">
-                  <img src={iconParent} alt="" className="role-icon-img" />
-                </span>
-                <span className="role-text">
-                  <span className="role-title">학부모로 로그인</span>
-                </span>
-                <span className="role-chevron">›</span>
-              </button>
-            </li>
-            <li>
-              <button type="button" onClick={() => chooseRole('teacher')}>
-                <span className="role-icon-box role-icon-box--teacher">
-                  <img src={iconTeacher} alt="" className="role-icon-img" />
-                </span>
-                <span className="role-text">
-                  <span className="role-title">선생님으로 로그인</span>
-                </span>
-                <span className="role-chevron">›</span>
-              </button>
-            </li>
-          </ul>
-        </>
-      )}
+      <ul className="menu-list login-role-list">
+        <li>
+          <button type="button" onClick={() => chooseRole('student')}>
+            <span className="role-icon-box role-icon-box--student">
+              <img src={iconStudent} alt="" className="role-icon-img" />
+            </span>
+            <span className="role-text">
+              <span className="role-title">학생으로 로그인</span>
+            </span>
+            <span className="role-chevron">›</span>
+          </button>
+        </li>
+        <li>
+          <button type="button" onClick={() => chooseRole('parent')}>
+            <span className="role-icon-box role-icon-box--parent">
+              <img src={iconParent} alt="" className="role-icon-img" />
+            </span>
+            <span className="role-text">
+              <span className="role-title">학부모로 로그인</span>
+            </span>
+            <span className="role-chevron">›</span>
+          </button>
+        </li>
+        <li>
+          <button type="button" onClick={() => chooseRole('teacher')}>
+            <span className="role-icon-box role-icon-box--teacher">
+              <img src={iconTeacher} alt="" className="role-icon-img" />
+            </span>
+            <span className="role-text">
+              <span className="role-title">선생님으로 로그인</span>
+            </span>
+            <span className="role-chevron">›</span>
+          </button>
+        </li>
+      </ul>
 
       {role !== null && (
-        <>
-          <div className="login-hero">
-            <img src={logoHwarang} alt="화랑 Hwarang Mentoring" className="login-logo-hwarang" />
-          </div>
-
-          <form className="login-form" onSubmit={handleSubmit}>
-            <button
-              type="button"
-              className="back-link"
-              style={{ alignSelf: 'flex-start', border: 'none', background: 'none', padding: 0 }}
-              onClick={() => chooseRole(null)}
-            >
-              ← 뒤로
-            </button>
-
-            {needsName && (
+        <div
+          onClick={closePopup}
+          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{ background: '#fff', borderRadius: 16, padding: '28px 24px', width: '85%', maxWidth: 340 }}
+          >
+            <h2 style={{ margin: '0 0 20px', fontSize: 18, textAlign: 'center' }}>{ROLE_LABEL[role]}</h2>
+            <form style={{ display: 'flex', flexDirection: 'column', gap: 12 }} onSubmit={handleSubmit}>
+              {needsName && (
+                <input
+                  type="text"
+                  placeholder={NAME_PLACEHOLDER[role]}
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  autoFocus
+                  style={{ padding: 12, fontSize: 16, borderRadius: 10, border: '1px solid #ddd', textAlign: 'center' }}
+                />
+              )}
               <input
-                type="text"
-                placeholder={NAME_PLACEHOLDER[role]}
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                autoFocus
+                type="password"
+                inputMode="numeric"
+                placeholder="코드"
+                value={code}
+                onChange={(e) => setCode(e.target.value)}
+                autoFocus={role === 'teacher'}
+                style={{ padding: 12, fontSize: 16, borderRadius: 10, border: '1px solid #ddd', textAlign: 'center', letterSpacing: 4 }}
               />
-            )}
-            <input
-              type="password"
-              inputMode="numeric"
-              placeholder="코드"
-              value={code}
-              onChange={(e) => setCode(e.target.value)}
-              autoFocus={role === 'teacher'}
-            />
-            <button
-              type="submit"
-              className="primary-button"
-              disabled={loading || !code.trim() || (needsName && !name.trim())}
-            >
-              {loading ? '확인 중...' : '로그인'}
-            </button>
-            {error && <p className="state-message state-message--error">{error}</p>}
-          </form>
-        </>
+              <button
+                type="submit"
+                className="primary-button"
+                disabled={loading || !code.trim() || (needsName && !name.trim())}
+              >
+                {loading ? '확인 중...' : '로그인'}
+              </button>
+              {error && <p className="state-message state-message--error" style={{ textAlign: 'center', margin: 0 }}>{error}</p>}
+            </form>
+          </div>
+        </div>
       )}
     </div>
   );
