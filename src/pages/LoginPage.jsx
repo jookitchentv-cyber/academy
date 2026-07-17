@@ -3,8 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { loginStudent, loginTeacher, loginParent } from '../services/authService';
 import bookDeco from '../assets/book-deco.png';
-import logo from '../assets/logo.png';
-import logoHorse from '../assets/logo-horse.png';
+import logoHwarang from '../assets/logo-hwarang.png';
 import iconStudent from '../assets/icon-student.png';
 import iconParent from '../assets/icon-parent.png';
 import iconTeacher from '../assets/icon-teacher.png';
@@ -67,10 +66,7 @@ export default function LoginPage() {
       {role === null && (
         <>
           <div className="login-hero">
-            <div className="login-logo-row">
-              <img src={logoHorse} alt="" className="login-logo-horse" />
-              <img src={logo} alt="화랑" className="login-logo" />
-            </div>
+            <img src={logoHwarang} alt="화랑 Hwarang Mentoring" className="login-logo-hwarang" />
             <img src={bookDeco} alt="" aria-hidden="true" className="login-deco-img" />
           </div>
 
@@ -115,10 +111,7 @@ export default function LoginPage() {
       {role !== null && (
         <>
           <div className="login-hero">
-            <div className="login-logo-row">
-              <img src={logoHorse} alt="" className="login-logo-horse" />
-              <img src={logo} alt="화랑" className="login-logo" />
-            </div>
+            <img src={logoHwarang} alt="화랑 Hwarang Mentoring" className="login-logo-hwarang" />
           </div>
 
           <form className="login-form" onSubmit={handleSubmit}>

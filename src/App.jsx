@@ -24,6 +24,7 @@ import TeacherDateDetail from './pages/teacher/TeacherDateDetail';
 import TeacherAttendanceCalendar from './pages/teacher/AttendanceCalendar';
 import AnnouncementForm from './pages/teacher/AnnouncementForm';
 import StudentForm from './pages/teacher/StudentForm';
+import StudentTable from './pages/teacher/StudentTable';
 
 export default function App() {
   return (
@@ -65,6 +66,7 @@ export default function App() {
             <Route path="/teacher/announcements/new" element={<AnnouncementForm />} />
             <Route path="/teacher/new-student" element={<StudentForm />} />
             <Route path="/teacher/edit-student/:studentId" element={<StudentForm />} />
+            <Route path="/teacher/students-table" element={<StudentTable />} />
           </Route>
 
           <Route path="*" element={<NotFound />} />

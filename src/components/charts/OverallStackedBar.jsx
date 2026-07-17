@@ -19,15 +19,15 @@ export default function OverallStackedBar({ subjects }) {
   return (
     <div className="overall-chart">
       {/* 도넛 + 중앙 텍스트 */}
-      <div style={{ position: 'relative', height: 190 }}>
-        <ResponsiveContainer width="100%" height={190}>
+      <div style={{ position: 'relative', height: 152 }}>
+        <ResponsiveContainer width="100%" height={152}>
           <PieChart>
             <Pie
               data={data}
               cx="50%"
               cy="50%"
-              innerRadius={68}
-              outerRadius={95}
+              innerRadius={54}
+              outerRadius={76}
               dataKey="value"
               startAngle={90}
               endAngle={450}

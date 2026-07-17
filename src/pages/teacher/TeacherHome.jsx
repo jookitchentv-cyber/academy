@@ -46,13 +46,18 @@ export default function TeacherHome() {
   return (
     <div className="page">
       <div className="page-header">
-        <h1>담당 학생</h1>
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+        {students !== null && (
+          <span style={{ fontSize: 17, color: 'var(--text-secondary)', fontWeight: 600, paddingLeft: 8 }}>학생수: {students.length}명</span>
+        )}
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginLeft: 'auto' }}>
           <Link to="/teacher/new-student" className="logout-button" style={{ textDecoration: 'none' }}>
             학생 등록
           </Link>
           <Link to="/teacher/announcements/new" className="logout-button" style={{ textDecoration: 'none' }}>
-            공지 등록
+            공지
+          </Link>
+          <Link to="/teacher/students-table" className="logout-button" style={{ textDecoration: 'none' }}>
+            현황
           </Link>
           <button className="logout-button" onClick={logout}>로그아웃</button>
         </div>

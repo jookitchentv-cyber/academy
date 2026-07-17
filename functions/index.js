@@ -1,5 +1,6 @@
 const { onDocumentUpdated } = require('firebase-functions/v2/firestore');
-const { onCall } = require('firebase-functions/v2/https');
+const { onCall, HttpsError } = require('firebase-functions/v2/https');
+const { onSchedule } = require('firebase-functions/v2/scheduler');
 const { initializeApp } = require('firebase-admin/app');
 const { getFirestore, FieldValue } = require('firebase-admin/firestore');
 const https = require('https');
@@ -136,7 +137,7 @@ exports.sendAttendanceAlim = onDocumentUpdated('dailyLogs/{docId}', async (event
 // 하원 보고: 선생님이 "부모님께 전송" 버튼을 클릭할 때 호출
 exports.sendDailyReport = onCall(async (request) => {
   const { studentId, date } = request.data ?? {};
-  if (!studentId || !date) throw new Error('studentId와 date는 필수입니다.');
+  if (!studentId || !date) throw new HttpsError('invalid-argument', 'studentId와 date는 필수입니다.');
 
   const db = getFirestore();
   const docRef = db.collection('dailyLogs').doc(`${studentId}_${date}`);
@@ -146,33 +147,56 @@ exports.sendDailyReport = onCall(async (request) => {
     getParentAndStudent(db, studentId),
   ]);
 
-  if (!logSnap.exists)  throw new Error('해당 날짜 기록이 없습니다.');
-  if (!parent?.phone)   throw new Error('부모님 연락처가 없습니다.');
-  if (!student?.name)   throw new Error('학생 정보가 없습니다.');
+  if (!logSnap.exists)  throw new HttpsError('not-found', '해당 날짜 기록이 없습니다.');
+  if (!parent?.phone)   throw new HttpsError('failed-precondition', '부모님 연락처가 없습니다.');
+  if (!student?.name)   throw new HttpsError('not-found', '학생 정보가 없습니다.');
 
   const log = logSnap.data();
-  if (!log.departureTime) throw new Error('하원 시간이 기록되지 않았습니다.');
-  if (!log.comment)       throw new Error('선생님 피드백을 먼저 입력해주세요.');
+  if (!log.departureTime) throw new HttpsError('failed-precondition', '하원 시간이 기록되지 않았습니다.');
+  if (!log.comment)       throw new HttpsError('failed-precondition', '선생님 피드백을 먼저 입력해주세요.');
 
   const departureStr = formatKoreanDateTime(log.departureTime);
   const planText     = log.plan?.rawText ?? '작성 내용 없음';
   const actualText   = log.rawText       ?? '작성 내용 없음';
 
-  await sendMessage(
-    parent.phone,
-    'XoPPslsplZ',
-    {
-      '#{학생이름}':    student.name,
-      '#{하원날짜시간}': departureStr,
-      '#{금일학습목표}': planText,
-      '#{금일학습량}':  actualText,
-      '#{피드백}':      log.comment,
-    },
-    `안녕하세요 화랑멘토링스쿨입니다!\n\n${student.name} 학생\n\n${departureStr}에 하원했습니다.\n\n[금일 학습 목표]\n${planText}\n\n[금일 학습량]\n${actualText}\n\n[피드백]\n${log.comment}`
-  );
+  try {
+    await sendMessage(
+      parent.phone,
+      'XoPPslsplZ',
+      {
+        '#{학생이름}':    student.name,
+        '#{하원날짜시간}': departureStr,
+        '#{금일학습목표}': planText,
+        '#{금일학습량}':  actualText,
+        '#{피드백}':      log.comment,
+      },
+      `안녕하세요 화랑멘토링스쿨입니다!\n\n${student.name} 학생\n\n${departureStr}에 하원했습니다.\n\n[금일 학습 목표]\n${planText}\n\n[금일 학습량]\n${actualText}\n\n[피드백]\n${log.comment}`
+    );
+  } catch (e) {
+    throw new HttpsError('internal', `메시지 전송 실패: ${e.message}`);
+  }
 
   await docRef.update({ reportSentAt: FieldValue.serverTimestamp() });
 
   console.log(`하원 보고 발송 완료: ${student.name} / ${date}`);
   return { success: true };
+});
+
+// 매년 1월 1일 00:00 KST (= 12월 31일 15:00 UTC) 학년 자동 진급
+const GRADE_ORDER = ['중1', '중2', '중3', '고1', '고2', '고3'];
+
+exports.advanceGrades = onSchedule({ schedule: '0 15 31 12 *', timeZone: 'Asia/Seoul' }, async () => {
+  const db = getFirestore();
+  const snap = await db.collection('students').get();
+  const batch = db.batch();
+
+  snap.docs.forEach((doc) => {
+    const { grade } = doc.data();
+    const idx = GRADE_ORDER.indexOf(grade);
+    if (idx === -1 || grade === '고3') return;
+    batch.update(doc.ref, { grade: GRADE_ORDER[idx + 1] });
+  });
+
+  await batch.commit();
+  console.log('학년 자동 진급 완료');
 });

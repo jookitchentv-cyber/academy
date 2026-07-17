@@ -26,6 +26,7 @@ export default function TeacherDateDetail() {
   const [comment, setComment] = useState('');
   const [saveStatus, setSaveStatus] = useState('idle'); // idle | saving | saved | error
   const [sendStatus, setSendStatus] = useState('idle'); // idle | sending | sent | error
+  const [sendError, setSendError] = useState('');
 
   useEffect(() => {
     let cancelled = false;
@@ -79,6 +80,7 @@ export default function TeacherDateDetail() {
         return { ...prev, subjects: Array.from(bySubject.values()), comment: comment === '' ? null : comment };
       });
       setSaveStatus('saved');
+      setTimeout(() => setSaveStatus('idle'), 1000);
     } catch {
       setSaveStatus('error');
     }
@@ -87,12 +89,21 @@ export default function TeacherDateDetail() {
   async function handleSendReport() {
     setSendStatus('sending');
     try {
+      if (saveStatus !== 'saved') {
+        const percents = {};
+        for (const [subject, value] of Object.entries(inputs)) {
+          percents[subject] = value === '' ? null : Number(value);
+        }
+        await saveTeacherRatings(studentId, date, percents, comment);
+        setSaveStatus('saved');
+      }
       const sendDailyReport = httpsCallable(functions, 'sendDailyReport');
       await sendDailyReport({ studentId, date });
       setSendStatus('sent');
       setLog((prev) => prev ? { ...prev, reportSentAt: new Date() } : prev);
     } catch (e) {
       console.error(e);
+      setSendError(e?.message ?? '알 수 없는 오류');
       setSendStatus('error');
     }
   }
@@ -108,12 +119,30 @@ export default function TeacherDateDetail() {
 
   return (
     <div>
+      {saveStatus === 'saved' && (
+        <div style={{
+          position: 'fixed',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          background: 'rgba(0,0,0,0.75)',
+          color: '#fff',
+          padding: '14px 28px',
+          borderRadius: 12,
+          fontSize: 16,
+          fontWeight: 600,
+          zIndex: 9999,
+          pointerEvents: 'none',
+        }}>
+          저장되었습니다
+        </div>
+      )}
       <p className="hint" style={{ marginTop: 0 }}>
         <Link to={`/teacher/students/${studentId}/daily/history`} className="back-link">
           ← 목록으로
         </Link>
       </p>
-      <h2 style={{ fontSize: 16, marginBottom: 16 }}>{formatDateLabel(date)}</h2>
+      <h2 style={{ fontSize: 16, marginBottom: 16, textAlign: 'center' }}>{formatDateLabel(date)}</h2>
 
       {merged.length > 0 && <OverallStackedBar subjects={merged} />}
 
@@ -168,11 +197,10 @@ export default function TeacherDateDetail() {
         <button className="primary-button" onClick={handleSave} disabled={saveStatus === 'saving'}>
           {saveStatus === 'saving' ? '저장 중...' : '저장'}
         </button>
-        {saveStatus === 'saved' && <p className="state-message">저장되었습니다.</p>}
         {saveStatus === 'error' && <p className="state-message state-message--error">저장에 실패했습니다.</p>}
       </div>
 
-      <div className="subject-section" style={{ marginTop: 24 }}>
+      <div className="subject-section" style={{ marginTop: 24, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
         <h3>부모님께 하원 보고 전송</h3>
         {log.reportSentAt ? (
           <p className="state-message">이미 전송된 날짜입니다.</p>
@@ -193,7 +221,7 @@ export default function TeacherDateDetail() {
             )}
             {sendStatus === 'sent' && <p className="state-message">전송이 완료되었습니다.</p>}
             {sendStatus === 'error' && (
-              <p className="state-message state-message--error">전송에 실패했습니다. 피드백이 저장되어 있는지 확인해주세요.</p>
+              <p className="state-message state-message--error">전송 실패: {sendError}</p>
             )}
           </>
         )}

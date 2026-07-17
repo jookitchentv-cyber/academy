@@ -68,7 +68,7 @@ export default function MonthCalendar({ year, month, statusByDate, announcements
         })}
       </div>
       <div className="calendar-legend">
-        <span><i className="calendar-swatch calendar-swatch--none" /> 계획 없음</span>
+        <span><i className="calendar-swatch calendar-swatch--none" /> 정상 수업</span>
         <span><i className="calendar-swatch calendar-swatch--pending" /> 확인 대기</span>
         <span><i className="calendar-swatch calendar-swatch--confirmed" /> 확인 완료</span>
         <span><i className="calendar-swatch calendar-swatch--cancel" /> 휴강</span>
