@@ -93,13 +93,11 @@ async function sendMessage(to, templateId, variables, smsText) {
 }
 
 async function getParentAndStudent(db, studentId) {
-  const [parentsSnap, studentSnap] = await Promise.all([
-    db.collection('parents').where('studentId', '==', studentId).limit(1).get(),
-    db.collection('students').doc(studentId).get(),
-  ]);
+  const studentSnap = await db.collection('students').doc(studentId).get();
+  const student = studentSnap.exists ? studentSnap.data() : null;
   return {
-    parent: parentsSnap.empty ? null : parentsSnap.docs[0].data(),
-    student: studentSnap.exists ? studentSnap.data() : null,
+    parent: student ? { phone: student.phone || null } : null,
+    student,
   };
 }
 

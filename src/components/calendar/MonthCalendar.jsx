@@ -4,10 +4,9 @@ const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토'];
 const pad = (n) => String(n).padStart(2, '0');
 
 const STATUS_MARK = { pending: '!', confirmed: '✓' };
+const ANNOUNCE_LABEL = { cancel: '휴강', time_change: '시간변경' };
 
-// year/month(1-12) 달력을 그리드로 렌더링. statusByDate: Map<'YYYY-MM-DD', 'none'|'pending'|'confirmed'>.
-// onDayClick이 주어지면 각 날짜가 버튼(클릭 가능)이 되고, 없으면 읽기 전용으로만 표시한다.
-export default function MonthCalendar({ year, month, statusByDate, onDayClick }) {
+export default function MonthCalendar({ year, month, statusByDate, announcementsByDate, onDayClick, onPrev, onNext }) {
   const daysInMonth = new Date(year, month, 0).getDate();
   const startWeekday = new Date(year, month - 1, 1).getDay();
   const today = todayString();
@@ -21,9 +20,15 @@ export default function MonthCalendar({ year, month, statusByDate, onDayClick })
 
   return (
     <div className="calendar">
-      <p className="calendar__title">
-        {year}년 {month}월
-      </p>
+      <div className="calendar__nav">
+        <button type="button" className="calendar__nav-btn" onClick={onPrev} style={{ visibility: onPrev ? 'visible' : 'hidden' }}>
+          ‹
+        </button>
+        <p className="calendar__title">{year}년 {month}월</p>
+        <button type="button" className="calendar__nav-btn" onClick={onNext} style={{ visibility: onNext ? 'visible' : 'hidden' }}>
+          ›
+        </button>
+      </div>
       <div className="calendar-weekdays">
         {WEEKDAYS.map((w) => (
           <span key={w}>{w}</span>
@@ -32,6 +37,7 @@ export default function MonthCalendar({ year, month, statusByDate, onDayClick })
       <div className="calendar-grid">
         {cells.map((cell, i) => {
           if (!cell) return <div key={`blank-${i}`} className="calendar-cell calendar-cell--blank" />;
+          const announce = announcementsByDate?.get(cell.date);
           const classNames = [
             'calendar-cell',
             `calendar-cell--${cell.status}`,
@@ -43,6 +49,11 @@ export default function MonthCalendar({ year, month, statusByDate, onDayClick })
             <>
               <span className="calendar-cell__day">{cell.day}</span>
               {STATUS_MARK[cell.status] && <span className="calendar-cell__mark">{STATUS_MARK[cell.status]}</span>}
+              {announce && (
+                <span className={`calendar-cell__announce calendar-cell__announce--${announce.type}`}>
+                  {ANNOUNCE_LABEL[announce.type]}
+                </span>
+              )}
             </>
           );
           return onDayClick ? (
@@ -57,15 +68,11 @@ export default function MonthCalendar({ year, month, statusByDate, onDayClick })
         })}
       </div>
       <div className="calendar-legend">
-        <span>
-          <i className="calendar-swatch calendar-swatch--none" /> 계획 없음
-        </span>
-        <span>
-          <i className="calendar-swatch calendar-swatch--pending" /> 확인 대기
-        </span>
-        <span>
-          <i className="calendar-swatch calendar-swatch--confirmed" /> 확인 완료
-        </span>
+        <span><i className="calendar-swatch calendar-swatch--none" /> 계획 없음</span>
+        <span><i className="calendar-swatch calendar-swatch--pending" /> 확인 대기</span>
+        <span><i className="calendar-swatch calendar-swatch--confirmed" /> 확인 완료</span>
+        <span><i className="calendar-swatch calendar-swatch--cancel" /> 휴강</span>
+        <span><i className="calendar-swatch calendar-swatch--time-change" /> 시간변경</span>
       </div>
     </div>
   );

@@ -22,6 +22,8 @@ import TeacherDailyStudyLayout from './pages/teacher/DailyStudyLayout';
 import TeacherDailyStudyHistory from './pages/teacher/DailyStudyHistory';
 import TeacherDateDetail from './pages/teacher/TeacherDateDetail';
 import TeacherAttendanceCalendar from './pages/teacher/AttendanceCalendar';
+import AnnouncementForm from './pages/teacher/AnnouncementForm';
+import StudentForm from './pages/teacher/StudentForm';
 
 export default function App() {
   return (
@@ -60,6 +62,9 @@ export default function App() {
             </Route>
             <Route path="/teacher/students/:studentId/exam" element={<ExamPrep />} />
             <Route path="/teacher/students/:studentId/attendance" element={<TeacherAttendanceCalendar />} />
+            <Route path="/teacher/announcements/new" element={<AnnouncementForm />} />
+            <Route path="/teacher/new-student" element={<StudentForm />} />
+            <Route path="/teacher/edit-student/:studentId" element={<StudentForm />} />
           </Route>
 
           <Route path="*" element={<NotFound />} />

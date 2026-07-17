@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { listDailyLogs, getDailyLog, confirmAttendance } from '../../services/dailyLogsService';
+import { listAnnouncementsForTeacher, buildAnnouncementMap } from '../../services/announcementsService';
+import { useAuth } from '../../context/AuthContext';
 import { getAttendanceStatus } from '../../utils/attendance';
 import { formatDateLabel } from '../../utils/date';
 import MonthCalendar from '../../components/calendar/MonthCalendar';
@@ -8,68 +10,92 @@ import Loading from '../../components/common/Loading';
 import ErrorMessage from '../../components/common/ErrorMessage';
 
 const today = new Date();
-const YEAR = today.getFullYear();
-const MONTH = today.getMonth() + 1;
+
+function buildStatusMap(logs, year, month) {
+  const prefix = `${year}-${String(month).padStart(2, '0')}`;
+  const map = new Map();
+  for (const log of logs) {
+    if (log.date.startsWith(prefix)) map.set(log.date, getAttendanceStatus(log));
+  }
+  return map;
+}
+
+function filterAnnouncementMap(announcements, studentId, year, month) {
+  const prefix = `${year}-${String(month).padStart(2, '0')}`;
+  return buildAnnouncementMap(
+    announcements.filter(
+      (a) => a.date.startsWith(prefix) && a.targetStudentIds.includes(studentId)
+    )
+  );
+}
 
 export default function TeacherAttendanceCalendar() {
+  const { session } = useAuth();
   const { studentId } = useParams();
-  const [statusByDate, setStatusByDate] = useState(null);
+  const [year, setYear] = useState(today.getFullYear());
+  const [month, setMonth] = useState(today.getMonth() + 1);
+  const [allLogs, setAllLogs] = useState(null);
+  const [allAnnouncements, setAllAnnouncements] = useState([]);
   const [error, setError] = useState('');
   const [selectedDate, setSelectedDate] = useState(null);
   const [detail, setDetail] = useState(undefined);
   const [confirming, setConfirming] = useState(false);
 
-  function loadMonth() {
-    return listDailyLogs(studentId).then((logs) => {
-      const prefix = `${YEAR}-${String(MONTH).padStart(2, '0')}`;
-      const map = new Map();
-      for (const log of logs) {
-        if (log.date.startsWith(prefix)) map.set(log.date, getAttendanceStatus(log));
-      }
-      setStatusByDate(map);
-    });
+  function loadAllLogs() {
+    return listDailyLogs(studentId).then(setAllLogs);
   }
 
   useEffect(() => {
     let cancelled = false;
-    loadMonth().catch(() => {
-      if (!cancelled) setError('출석 현황을 불러오지 못했습니다.');
-    });
-    return () => {
-      cancelled = true;
-    };
+    Promise.all([
+      listDailyLogs(studentId),
+      listAnnouncementsForTeacher(session.teacherId),
+    ])
+      .then(([logs, announcements]) => {
+        if (!cancelled) {
+          setAllLogs(logs);
+          setAllAnnouncements(announcements);
+        }
+      })
+      .catch(() => { if (!cancelled) setError('출석 현황을 불러오지 못했습니다.'); });
+    return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [studentId]);
+
+  function prevMonth() {
+    if (month === 1) { setYear((y) => y - 1); setMonth(12); }
+    else setMonth((m) => m - 1);
+  }
+  function nextMonth() {
+    if (month === 12) { setYear((y) => y + 1); setMonth(1); }
+    else setMonth((m) => m + 1);
+  }
 
   function handleDayClick(date) {
     setSelectedDate(date);
     setDetail(undefined);
-    getDailyLog(studentId, date)
-      .then(setDetail)
-      .catch(() => setDetail(null));
+    getDailyLog(studentId, date).then(setDetail).catch(() => setDetail(null));
   }
 
   async function handleConfirm() {
     setConfirming(true);
     try {
       await confirmAttendance(studentId, selectedDate);
-      await loadMonth();
-      setDetail((prev) =>
-        prev ? { ...prev, attendanceConfirmedAt: new Date() } : prev
-      );
+      await loadAllLogs();
+      setDetail((prev) => prev ? { ...prev, attendanceConfirmedAt: new Date() } : prev);
     } finally {
       setConfirming(false);
     }
   }
 
+  const statusByDate = allLogs ? buildStatusMap(allLogs, year, month) : null;
+  const announcementsByDate = filterAnnouncementMap(allAnnouncements, studentId, year, month);
   const selectedStatus = selectedDate ? statusByDate?.get(selectedDate) ?? 'none' : null;
 
   return (
     <div className="page">
       <div className="page-header">
-        <Link to={`/teacher/students/${studentId}`} className="back-link">
-          ← 뒤로
-        </Link>
+        <Link to={`/teacher/students/${studentId}`} className="back-link">← 뒤로</Link>
         <h1>출석확인</h1>
         <span />
       </div>
@@ -77,7 +103,15 @@ export default function TeacherAttendanceCalendar() {
       {!error && statusByDate === null && <Loading />}
       {!error && statusByDate && (
         <>
-          <MonthCalendar year={YEAR} month={MONTH} statusByDate={statusByDate} onDayClick={handleDayClick} />
+          <MonthCalendar
+            year={year}
+            month={month}
+            statusByDate={statusByDate}
+            announcementsByDate={announcementsByDate}
+            onDayClick={handleDayClick}
+            onPrev={prevMonth}
+            onNext={nextMonth}
+          />
 
           {selectedDate && (
             <div className="subject-section" style={{ marginTop: 16 }}>
@@ -86,9 +120,7 @@ export default function TeacherAttendanceCalendar() {
               {detail === null && <p className="subject-section__raw">해당 날짜 기록이 없습니다.</p>}
               {detail && (
                 <>
-                  {selectedStatus === 'none' && (
-                    <p className="subject-section__raw">출석 요청이 없는 날짜입니다.</p>
-                  )}
+                  {selectedStatus === 'none' && <p className="subject-section__raw">출석 요청이 없는 날짜입니다.</p>}
                   {selectedStatus === 'pending' && (
                     <>
                       <p className="subject-section__raw">학생이 출석 버튼을 눌렀습니다.</p>
@@ -101,6 +133,12 @@ export default function TeacherAttendanceCalendar() {
                     <p className="state-message">출석 확인 완료 — 부모님께 등원 알림이 발송되었습니다.</p>
                   )}
                 </>
+              )}
+              {announcementsByDate.get(selectedDate) && (
+                <p className="subject-section__raw" style={{ marginTop: 8 }}>
+                  📢 {announcementsByDate.get(selectedDate).type === 'cancel' ? '휴강' : '수업시간변경'}
+                  {announcementsByDate.get(selectedDate).note ? ` — ${announcementsByDate.get(selectedDate).note}` : ''}
+                </p>
               )}
             </div>
           )}
