@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { getDailyLog, saveStudentEntry, saveStudentPlan } from '../../services/dailyLogsService';
 import { SUBJECTS, FALLBACK_SUBJECT } from '../../constants/subjects';
@@ -35,6 +35,7 @@ export default function StudyTextInput({ mode }) {
   const [selected, setSelected] = useState({});
   const [loading, setLoading] = useState(true);
   const [status, setStatus] = useState('idle');
+  const draftsRef = useRef({});
   const { save, getExisting, placeholder, savedMessage } = CONFIG[mode];
 
   useEffect(() => {
@@ -52,11 +53,12 @@ export default function StudyTextInput({ mode }) {
   function toggleSubject(subject) {
     setSelected((prev) => {
       if (subject in prev) {
+        draftsRef.current[subject] = prev[subject];
         const next = { ...prev };
         delete next[subject];
         return next;
       }
-      return { ...prev, [subject]: '' };
+      return { ...prev, [subject]: draftsRef.current[subject] ?? '' };
     });
     setStatus('idle');
   }
