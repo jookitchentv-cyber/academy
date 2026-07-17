@@ -1,9 +1,15 @@
-import { collection, getDocs, doc, getDoc, addDoc, updateDoc, deleteDoc, query, where } from 'firebase/firestore';
+import { collection, getDocs, doc, getDoc, addDoc, updateDoc, deleteDoc, query, where, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase/config';
 
 export async function listStudents() {
   const snap = await getDocs(collection(db, 'students'));
-  return snap.docs.map((d) => ({ studentId: d.id, ...d.data() }));
+  return snap.docs
+    .map((d) => ({ studentId: d.id, ...d.data() }))
+    .sort((a, b) => {
+      const aTs = a.createdAt?.toMillis?.() ?? 0;
+      const bTs = b.createdAt?.toMillis?.() ?? 0;
+      return bTs - aTs;
+    });
 }
 
 export async function getStudent(studentId) {
@@ -25,7 +31,7 @@ export async function isParentCodeTaken(parentCode, excludeStudentId = null) {
 }
 
 export async function createStudent({ name, grade, code, parentCode, phone }) {
-  const ref = await addDoc(collection(db, 'students'), { name, grade, code, parentCode: parentCode || '', phone: phone || '' });
+  const ref = await addDoc(collection(db, 'students'), { name, grade, code, parentCode: parentCode || '', phone: phone || '', createdAt: serverTimestamp() });
   return ref.id;
 }
 
