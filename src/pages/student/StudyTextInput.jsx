@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { getDailyLog, saveStudentEntry, saveStudentPlan } from '../../services/dailyLogsService';
-import { SUBJECTS, FALLBACK_SUBJECT } from '../../constants/subjects';
+import { SUBJECTS } from '../../constants/subjects';
 import { todayString } from '../../utils/date';
 import Loading from '../../components/common/Loading';
 
-const ALL_SUBJECTS = [...SUBJECTS, FALLBACK_SUBJECT];
+const ALL_SUBJECTS = [...SUBJECTS];
 
 const CONFIG = {
   plan: {
