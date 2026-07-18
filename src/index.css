@@ -140,6 +140,15 @@ body {
   justify-content: flex-end;
 }
 
+@media (max-width: 768px) {
+  .login-bg-page {
+    padding-top: 25vh;
+  }
+  .login-img-btn {
+    width: 70%;
+  }
+}
+
 .login-bg-page .login-role-list {
   margin-top: auto;
   margin-bottom: 48px;
