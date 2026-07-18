@@ -5,15 +5,17 @@ export default function ExamPrep() {
   const location = useLocation();
   const { studentId } = useParams();
   const isTeacherContext = location.pathname.startsWith('/teacher');
-  const backTo = isTeacherContext ? `/teacher/students/${studentId}` : '/student';
+  const backTo = isTeacherContext ? '/teacher' : '/student';
 
   return (
     <div className="page">
       <div className="page-header">
-        <Link to={backTo} className="back-link">
-          ← 뒤로
-        </Link>
-        <h1>시험 대비</h1>
+        {isTeacherContext ? (
+          <Link to={backTo} className="back-link">← 뒤로</Link>
+        ) : (
+          <span />
+        )}
+        <h1 style={{ margin: 0 }}>시험 대비</h1>
         <span />
       </div>
       <p className="state-message state-message--muted">준비중입니다. 시험 기간에 추가될 예정이에요.</p>

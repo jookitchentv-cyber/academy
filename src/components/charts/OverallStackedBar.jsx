@@ -1,4 +1,5 @@
-import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
+import { useState } from 'react';
+import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 import { getSubjectColor } from '../../constants/colors';
 import { computeOverallPercent } from '../../utils/computeOverallPercent';
 
@@ -15,6 +16,17 @@ export default function OverallStackedBar({ subjects }) {
   }));
 
   const data = [...slices, { name: REST_KEY, value: 100 - (overall ?? 0) }];
+
+  const [hovered, setHovered] = useState(null);
+
+  function handleMouseEnter(entry) {
+    if (entry.name === REST_KEY) {
+      setHovered({ name: '나머지', percent: overall !== null ? 100 - overall : null, color: '#9ca3af' });
+    } else {
+      const s = subjects.find((x) => x.subject === entry.name);
+      setHovered({ name: entry.name, percent: typeof s?.percent === 'number' ? s.percent : null, color: getSubjectColor(entry.name) });
+    }
+  }
 
   return (
     <div className="overall-chart">
@@ -33,6 +45,8 @@ export default function OverallStackedBar({ subjects }) {
               endAngle={450}
               stroke="var(--chart-surface)"
               strokeWidth={2}
+              onMouseEnter={(entry) => handleMouseEnter(entry)}
+              onMouseLeave={() => setHovered(null)}
             >
               {data.map((entry) => (
                 <Cell
@@ -41,25 +55,6 @@ export default function OverallStackedBar({ subjects }) {
                 />
               ))}
             </Pie>
-            <Tooltip
-              content={({ active, payload }) => {
-                if (!active || !payload?.length) return null;
-                const entry = payload[0];
-                if (entry.name === REST_KEY) return (
-                  <div style={{ background: '#fff', border: '1px solid #ddd', padding: '6px 10px', borderRadius: 6, fontSize: 13 }}>
-                    <span style={{ color: '#9ca3af' }}>●</span>{' '}
-                    나머지: {overall !== null ? `${100 - overall}%` : '미평가'}
-                  </div>
-                );
-                const s = subjects.find((x) => x.subject === entry.name);
-                return (
-                  <div style={{ background: '#fff', border: '1px solid #ddd', padding: '6px 10px', borderRadius: 6, fontSize: 13 }}>
-                    <span style={{ color: entry.fill }}>●</span>{' '}
-                    {entry.name}: {typeof s?.percent === 'number' ? `${s.percent}%` : '미평가'}
-                  </div>
-                );
-              }}
-            />
           </PieChart>
         </ResponsiveContainer>
 
@@ -78,6 +73,16 @@ export default function OverallStackedBar({ subjects }) {
             {overall === null ? '미평가' : `${overall}%`}
           </span>
         </div>
+      </div>
+
+      {/* 호버 툴팁 — 차트 바깥 아래에 표시 */}
+      <div style={{ height: 44, display: 'flex', alignItems: 'center', justifyContent: 'center', paddingTop: 10 }}>
+        {hovered && (
+          <div style={{ background: '#fff', border: '1px solid #ddd', padding: '8px 14px', borderRadius: 6, fontSize: 13, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+            <span style={{ width: 8, height: 8, borderRadius: '50%', background: hovered.color, display: 'inline-block', flexShrink: 0 }} />
+            {hovered.name}: {hovered.percent !== null ? `${hovered.percent}%` : '미평가'}
+          </div>
+        )}
       </div>
 
       {/* 범례 */}

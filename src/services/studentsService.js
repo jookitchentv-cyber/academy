@@ -42,3 +42,7 @@ export async function updateStudent(studentId, { name, grade, code, parentCode, 
 export async function deleteStudent(studentId) {
   await deleteDoc(doc(db, 'students', studentId));
 }
+
+export async function updateStudentMemo(studentId, memo) {
+  await updateDoc(doc(db, 'students', studentId), { memo: memo || '' });
+}

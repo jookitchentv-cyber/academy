@@ -1,9 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { listDailyLogs, getDailyLog, confirmAttendance } from '../../services/dailyLogsService';
+import { getAttendanceMap, getDailyLog, confirmAttendance } from '../../services/dailyLogsService';
 import { listAnnouncementsForTeacher, buildAnnouncementMap } from '../../services/announcementsService';
 import { useAuth } from '../../context/AuthContext';
-import { getAttendanceStatus } from '../../utils/attendance';
 import { formatDateLabel } from '../../utils/date';
 import MonthCalendar from '../../components/calendar/MonthCalendar';
 import Loading from '../../components/common/Loading';
@@ -11,11 +10,11 @@ import ErrorMessage from '../../components/common/ErrorMessage';
 
 const today = new Date();
 
-function buildStatusMap(logs, year, month) {
+function buildStatusMap(attendanceMap, year, month) {
   const prefix = `${year}-${String(month).padStart(2, '0')}`;
   const map = new Map();
-  for (const log of logs) {
-    if (log.date.startsWith(prefix)) map.set(log.date, getAttendanceStatus(log));
+  for (const [date, status] of attendanceMap) {
+    if (date.startsWith(prefix)) map.set(date, status);
   }
   return map;
 }
@@ -34,32 +33,21 @@ export default function TeacherAttendanceCalendar() {
   const { studentId } = useParams();
   const [year, setYear] = useState(today.getFullYear());
   const [month, setMonth] = useState(today.getMonth() + 1);
-  const [allLogs, setAllLogs] = useState(null);
+  const [allAttendance, setAllAttendance] = useState(null);
   const [allAnnouncements, setAllAnnouncements] = useState([]);
   const [error, setError] = useState('');
   const [selectedDate, setSelectedDate] = useState(null);
   const [detail, setDetail] = useState(undefined);
   const [confirming, setConfirming] = useState(false);
 
-  function loadAllLogs() {
-    return listDailyLogs(studentId).then(setAllLogs);
-  }
-
   useEffect(() => {
     let cancelled = false;
-    Promise.all([
-      listDailyLogs(studentId),
-      listAnnouncementsForTeacher(session.teacherId),
-    ])
-      .then(([logs, announcements]) => {
-        if (!cancelled) {
-          setAllLogs(logs);
-          setAllAnnouncements(announcements);
-        }
-      })
+    getAttendanceMap(studentId)
+      .then((map) => { if (!cancelled) setAllAttendance(map); })
       .catch(() => { if (!cancelled) setError('출석 현황을 불러오지 못했습니다.'); });
+    listAnnouncementsForTeacher(session.teacherId)
+      .then((announcements) => { if (!cancelled) setAllAnnouncements(announcements); });
     return () => { cancelled = true; };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [studentId]);
 
   function prevMonth() {
@@ -81,21 +69,25 @@ export default function TeacherAttendanceCalendar() {
     setConfirming(true);
     try {
       await confirmAttendance(studentId, selectedDate);
-      await loadAllLogs();
+      setAllAttendance((prev) => {
+        const next = new Map(prev);
+        next.set(selectedDate, 'confirmed');
+        return next;
+      });
       setDetail((prev) => prev ? { ...prev, attendanceConfirmedAt: new Date() } : prev);
     } finally {
       setConfirming(false);
     }
   }
 
-  const statusByDate = allLogs ? buildStatusMap(allLogs, year, month) : null;
+  const statusByDate = allAttendance ? buildStatusMap(allAttendance, year, month) : null;
   const announcementsByDate = filterAnnouncementMap(allAnnouncements, studentId, year, month);
   const selectedStatus = selectedDate ? statusByDate?.get(selectedDate) ?? 'none' : null;
 
   return (
     <div className="page">
       <div className="page-header">
-        <Link to={`/teacher/students/${studentId}`} className="back-link">← 뒤로</Link>
+        <Link to="/teacher" className="back-link">← 뒤로</Link>
         <h1>출석확인</h1>
         <span />
       </div>
@@ -122,12 +114,12 @@ export default function TeacherAttendanceCalendar() {
                 <>
                   {selectedStatus === 'none' && <p className="subject-section__raw">출석 요청이 없는 날짜입니다.</p>}
                   {selectedStatus === 'pending' && (
-                    <>
-                      <p className="subject-section__raw">학생이 출석 버튼을 눌렀습니다.</p>
-                      <button className="primary-button" style={{ marginTop: 10 }} onClick={handleConfirm} disabled={confirming}>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+                      <p className="subject-section__raw" style={{ margin: 0 }}>학생이 출석 버튼을 눌렀습니다.</p>
+                      <button className="primary-button" style={{ marginTop: 4 }} onClick={handleConfirm} disabled={confirming}>
                         {confirming ? '처리 중...' : '출석 확인'}
                       </button>
-                    </>
+                    </div>
                   )}
                   {selectedStatus === 'confirmed' && (
                     <p className="state-message">출석 확인 완료 — 부모님께 등원 알림이 발송되었습니다.</p>

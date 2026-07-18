@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { getStudent, createStudent, updateStudent, deleteStudent, isCodeTaken, isParentCodeTaken } from '../../services/studentsService';
+import { useTeacher } from '../../context/TeacherContext';
 import Loading from '../../components/common/Loading';
 
 const GRADES = ['중1', '중2', '중3', '고1', '고2', '고3'];
@@ -9,6 +10,7 @@ export default function StudentForm() {
   const { studentId } = useParams();
   const isEdit = Boolean(studentId);
   const navigate = useNavigate();
+  const { refresh } = useTeacher();
 
   const [name, setName] = useState('');
   const [grade, setGrade] = useState('');
@@ -52,6 +54,7 @@ export default function StudentForm() {
       } else {
         await createStudent({ name: name.trim(), grade, code, parentCode, phone: phone.trim() });
       }
+      refresh();
       navigate('/teacher');
     } catch {
       setStatus('error');
@@ -63,6 +66,7 @@ export default function StudentForm() {
     setStatus('saving');
     try {
       await deleteStudent(studentId);
+      refresh();
       navigate('/teacher');
     } catch {
       setStatus('error');

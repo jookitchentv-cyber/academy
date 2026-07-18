@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { getAttendanceMap } from '../../services/dailyLogsService';
 import { listAnnouncementsForStudent, buildAnnouncementMap } from '../../services/announcementsService';
-import { todayString } from '../../utils/date';
 import MonthCalendar from '../../components/calendar/MonthCalendar';
 import Loading from '../../components/common/Loading';
 import ErrorMessage from '../../components/common/ErrorMessage';
@@ -23,7 +22,7 @@ function filterAnnouncementMap(allAnnouncements, year, month) {
   return buildAnnouncementMap(allAnnouncements.filter((a) => a.date.startsWith(prefix)));
 }
 
-export default function AttendanceCalendar() {
+export default function ParentAttendanceCalendar() {
   const { session } = useAuth();
   const [year, setYear] = useState(today.getFullYear());
   const [month, setMonth] = useState(today.getMonth() + 1);
@@ -31,6 +30,7 @@ export default function AttendanceCalendar() {
   const [allAnnouncements, setAllAnnouncements] = useState([]);
   const [error, setError] = useState('');
   const [selectedDate, setSelectedDate] = useState(null);
+
   useEffect(() => {
     let cancelled = false;
     getAttendanceMap(session.studentId)
@@ -40,8 +40,6 @@ export default function AttendanceCalendar() {
       .then((announcements) => { if (!cancelled) setAllAnnouncements(announcements); });
     return () => { cancelled = true; };
   }, [session.studentId]);
-
-  const todayStatus = allAttendance?.get(todayString()) ?? 'none';
 
   function prevMonth() {
     if (month === 1) { setYear((y) => y - 1); setMonth(12); }
@@ -66,7 +64,7 @@ export default function AttendanceCalendar() {
   return (
     <div className="page">
       <div className="page-header">
-        <h1>출석 확인</h1>
+        <h1>출석 현황</h1>
       </div>
 
       {error && <ErrorMessage>{error}</ErrorMessage>}

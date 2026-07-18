@@ -9,9 +9,11 @@ import {
   where,
   documentId,
   getDocs,
+  arrayUnion,
 } from 'firebase/firestore';
 import { db } from '../firebase/config';
 import { subjectsMapToOrderedArray } from '../utils/subjectsMap';
+import { getAttendanceStatus } from '../utils/attendance';
 import { FALLBACK_SUBJECT } from '../constants/subjects';
 
 const logDocId = (studentId, date) => studentId + '_' + date;
@@ -21,7 +23,7 @@ const cacheKey = (type, ...args) => type + ':' + args.join(':');
 
 function invalidate(studentId, date) {
   cache.delete(cacheKey('log', studentId, date));
-  cache.delete(cacheKey('list', studentId));
+  cache.delete(cacheKey('index', studentId));
 }
 
 function fromSnap(snap) {
@@ -43,6 +45,68 @@ function fromSnap(snap) {
   };
 }
 
+// students/{studentId} 문서에서 logDates + logAttendance를 한 번에 읽어 캐싱.
+// logDates 필드가 없는 기존 학생은 구 prefix 쿼리로 1회 마이그레이션.
+async function getStudentIndex(studentId) {
+  const key = cacheKey('index', studentId);
+  if (cache.has(key)) return cache.get(key);
+
+  const studentSnap = await getDoc(doc(db, 'students', studentId));
+  const data = studentSnap.exists() ? studentSnap.data() : {};
+
+  let dates;
+  let rawAttendance;
+
+  if (Array.isArray(data.logDates)) {
+    dates = data.logDates;
+    rawAttendance = data.logAttendance ?? {};
+  } else {
+    // 기존 학생 1회 마이그레이션
+    const prefix = studentId + '_';
+    const prefixEnd = prefix + String.fromCharCode(0xf8ff);
+    const q = query(
+      collection(db, 'dailyLogs'),
+      where(documentId(), '>=', prefix),
+      where(documentId(), '<', prefixEnd),
+    );
+    const snap = await getDocs(q);
+    dates = [];
+    rawAttendance = {};
+    for (const d of snap.docs) {
+      const dd = d.data();
+      if (!dd.date) continue;
+      dates.push(dd.date);
+      const status = getAttendanceStatus({
+        attendanceRequestedAt: dd.attendanceRequestedAt,
+        attendanceConfirmedAt: dd.attendanceConfirmedAt,
+      });
+      if (status !== 'none') rawAttendance[dd.date] = status;
+    }
+    if (studentSnap.exists()) {
+      updateDoc(doc(db, 'students', studentId), {
+        logDates: dates,
+        logAttendance: rawAttendance,
+      }).catch(() => {});
+    }
+  }
+
+  const sortedDates = [...dates].sort((a, b) => b.localeCompare(a)).map((date) => ({ date }));
+  const attendanceMap = new Map(Object.entries(rawAttendance));
+  const result = { dates: sortedDates, attendanceMap };
+  cache.set(key, result);
+  return result;
+}
+
+// 날짜 목록 반환 (네비게이션·모달용)
+export async function listDailyLogs(studentId) {
+  return (await getStudentIndex(studentId)).dates;
+}
+
+// 출결 상태 Map<date, 'pending'|'confirmed'> 반환 (캘린더용)
+export async function getAttendanceMap(studentId) {
+  return (await getStudentIndex(studentId)).attendanceMap;
+}
+
 export async function getDailyLog(studentId, date) {
   const key = cacheKey('log', studentId, date);
   if (cache.has(key)) return cache.get(key);
@@ -52,31 +116,14 @@ export async function getDailyLog(studentId, date) {
   return result;
 }
 
-// 학생의 모든 기록을 최신 날짜순으로 반환. 문서 ID가 "studentId_YYYY-MM-DD"라
-// prefix 범위 쿼리로 해당 학생 것만 가져온다. documentId()에 range 필터와 orderBy를
-// 같이 걸면(둘 다 자동 __name__ 인덱스를 쓸 거라 예상했지만) Firestore가 실제로는
-// 복합 인덱스를 요구해서, orderBy는 서버가 아니라 클라이언트에서 정렬한다
-// (레코드 수가 적은 개인용 앱이라 정렬 비용은 무시할 만함).
-// prefixEnd는 유니코드 사전순으로 prefix로 시작하는 모든 문자열보다 큰 상한값.
-export async function listDailyLogs(studentId) {
-  const key = cacheKey('list', studentId);
-  if (cache.has(key)) return cache.get(key);
-  const prefix = studentId + '_';
-  const prefixEnd = prefix + String.fromCharCode(0xf8ff);
-  const q = query(
-    collection(db, 'dailyLogs'),
-    where(documentId(), '>=', prefix),
-    where(documentId(), '<', prefixEnd),
-  );
-  const snap = await getDocs(q);
-  const result = snap.docs.map(fromSnap).sort((a, b) => b.date.localeCompare(a.date));
-  cache.set(key, result);
-  return result;
+// 날짜·출결 인덱스 업데이트
+async function updateStudentIndex(studentId, date, attendanceStatus = null) {
+  const updates = { logDates: arrayUnion(date) };
+  if (attendanceStatus) updates[`logAttendance.${date}`] = attendanceStatus;
+  await updateDoc(doc(db, 'students', studentId), updates);
+  cache.delete(cacheKey('index', studentId));
 }
 
-// 과목 선택 UI → 학습량 저장. parser 없이 selections에서 직접 subjects map 구성.
-// 재저장 시 선생님이 이미 매긴 percent는 과목명 기준으로 보존한다.
-// 저장 시각 = 하원 시간(departureTime)으로 함께 기록한다.
 export async function saveStudentEntry(studentId, date, selections) {
   invalidate(studentId, date);
   const ref = doc(db, 'dailyLogs', logDocId(studentId, date));
@@ -105,9 +152,9 @@ export async function saveStudentEntry(studentId, date, selections) {
     { studentId, date, rawText, subjects: subjectsMap, departureTime: serverTimestamp(), updatedAt: serverTimestamp() },
     { merge: true }
   );
+  await updateStudentIndex(studentId, date);
 }
 
-// 과목 선택 UI → 학습 계획 저장. percent 없음(채점 대상 아님).
 export async function saveStudentPlan(studentId, date, selections) {
   invalidate(studentId, date);
   const ref = doc(db, 'dailyLogs', logDocId(studentId, date));
@@ -128,11 +175,9 @@ export async function saveStudentPlan(studentId, date, selections) {
     { studentId, date, plan: { rawText, subjects: subjectsMap }, updatedAt: serverTimestamp() },
     { merge: true }
   );
+  await updateStudentIndex(studentId, date);
 }
 
-// 선생님이 과목별 percent와 코멘트를 저장. percentsBySubject 예: { 국어: 50, 수학: 100 }
-// 각 필드만 원자적으로 갱신(배열/문서 전체를 읽고 다시 쓰지 않음). comment가 undefined면
-// 건드리지 않고, 빈 문자열/null이면 지운다.
 export async function saveTeacherRatings(studentId, date, percentsBySubject, comment) {
   invalidate(studentId, date);
   const ref = doc(db, 'dailyLogs', logDocId(studentId, date));
@@ -146,7 +191,6 @@ export async function saveTeacherRatings(studentId, date, percentsBySubject, com
   await updateDoc(ref, updates);
 }
 
-// 학생이 출석 버튼을 눌렀을 때 호출. attendanceRequestedAt 기록.
 export async function requestAttendance(studentId, date) {
   invalidate(studentId, date);
   const ref = doc(db, 'dailyLogs', logDocId(studentId, date));
@@ -160,11 +204,13 @@ export async function requestAttendance(studentId, date) {
     },
     { merge: true }
   );
+  await updateStudentIndex(studentId, date, 'pending');
 }
 
-// 선생님이 출석을 확인할 때 호출. attendanceConfirmedAt 기록 → Cloud Function이 등원 알림 발송.
 export async function confirmAttendance(studentId, date) {
   invalidate(studentId, date);
   const ref = doc(db, 'dailyLogs', logDocId(studentId, date));
   await updateDoc(ref, { attendanceConfirmedAt: serverTimestamp(), updatedAt: serverTimestamp() });
+  await updateDoc(doc(db, 'students', studentId), { [`logAttendance.${date}`]: 'confirmed' });
+  cache.delete(cacheKey('index', studentId));
 }

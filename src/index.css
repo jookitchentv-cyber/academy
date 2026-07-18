@@ -28,6 +28,7 @@ img {
 html {
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
+  overflow-y: scroll;
 }
 
 body {
@@ -62,6 +63,7 @@ body {
 }
 
 .page-header {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -73,9 +75,13 @@ body {
 }
 
 .page-header h1 {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
   font-size: 19px;
   margin: 0;
-  overflow-wrap: anywhere;
+  white-space: nowrap;
+  pointer-events: none;
 }
 
 .back-link {
@@ -128,6 +134,20 @@ body {
   position: relative;
 }
 
+.login-bg-page {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.login-bg-page .login-role-list {
+  margin-top: auto;
+  margin-bottom: 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
 .login-hero {
   position: relative;
   display: flex;
@@ -158,14 +178,49 @@ body {
   filter: brightness(0.35) sepia(1) saturate(4) hue-rotate(195deg);
 }
 
-.login-role-list button {
+.login-social {
   display: flex;
   align-items: center;
-  gap: 14px;
-  border-color: #222;
-  text-align: left;
-  padding: 16px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.login-social--a .login-social__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 18px;
+  border-radius: 20px;
+  background: transparent;
+  border: 1px solid rgba(0,0,0,0.15);
+  font-size: 13px;
+  font-weight: 600;
+  color: #333;
+  text-decoration: none;
+}
+
+.login-social--a {
+  margin-top: 16px;
+  margin-bottom: 32px;
+}
+
+.login-img-btn {
+  display: block;
+  width: 70%;
+  margin: 0 auto;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+.login-img-btn img {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 16px;
+  border: 1px solid rgba(0,0,0,0.12);
 }
 
 .role-icon-box {
@@ -218,9 +273,6 @@ body {
   background: #f2f2f2;
 }
 
-.student-home-page .page-header h1 {
-  padding-left: 8px;
-}
 
 .attendance-banner {
   margin: 8px;
@@ -371,6 +423,22 @@ body {
 
 .subject-input-group textarea.study-input {
   min-height: 80px;
+}
+
+.study-save-bar {
+  position: fixed;
+  bottom: 64px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 480px;
+  padding: 10px 16px;
+  background: #ffffff;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  z-index: 90;
 }
 
 textarea.study-input {
@@ -528,6 +596,7 @@ textarea.study-input {
 .state-message {
   color: var(--text-secondary);
   font-size: 14px;
+  text-align: center;
 }
 
 .state-message--muted {
@@ -730,6 +799,30 @@ button.calendar-cell {
   margin-left: 8px;
 }
 
+.day-status-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 99px;
+  font-size: 11px;
+  font-weight: 600;
+  vertical-align: middle;
+}
+
+.day-status-badge--pending {
+  background: var(--warning, #f59e0b);
+  color: #fff;
+}
+
+.day-status-badge--studying {
+  background: var(--accent);
+  color: #fff;
+}
+
+.day-status-badge--departed {
+  background: var(--status-good);
+  color: #fff;
+}
+
 .attendance-pending-badge {
   display: inline-block;
   margin-left: 8px;
@@ -872,6 +965,244 @@ button.calendar-cell {
   background: #4f46e5;
   border-color: #4f46e5;
 }
+
+/* ── Teacher student list ───────────────────────────────── */
+
+.teacher-student-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.teacher-student-item {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.teacher-student-info {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  flex: 1;
+  min-width: 0;
+}
+
+.teacher-student-name {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.teacher-student-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.teacher-student-grade {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.teacher-student-actions {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.teacher-student-action {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  text-decoration: none;
+  color: var(--text-secondary);
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: #f7f7f7;
+  min-width: 52px;
+}
+
+.teacher-student-action span {
+  font-size: 10px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* ── Teacher table inline edit ──────────────────────────── */
+
+.table-edit-input {
+  width: 100%;
+  min-width: 54px;
+  padding: 4px 5px;
+  border: 1px solid var(--accent);
+  border-radius: 4px;
+  font-size: 13px;
+  background: #fff;
+  color: var(--text-primary);
+  font-family: inherit;
+}
+
+.table-edit-input--pin {
+  width: 46px;
+  text-align: center;
+  letter-spacing: 2px;
+  font-family: monospace;
+}
+
+.table-edit-select {
+  padding: 4px 2px;
+  border: 1px solid var(--accent);
+  border-radius: 4px;
+  font-size: 13px;
+  background: #fff;
+  color: var(--text-primary);
+}
+
+/* ── Modal ──────────────────────────────────────────────── */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 200;
+}
+
+.modal-card {
+  background: #fff;
+  border-radius: 20px 20px 0 0;
+  width: 100%;
+  max-width: 480px;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 20px 16px 36px;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.modal-title {
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 18px;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px 8px;
+  line-height: 1;
+}
+
+/* ── Teacher bottom tab bar ─────────────────────────────── */
+
+.teacher-layout {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.teacher-layout .page {
+  padding-bottom: 84px;
+}
+
+.date-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 0 16px;
+}
+
+.date-nav__label {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.date-nav__btn {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  width: 36px;
+  height: 36px;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.date-nav__btn:disabled {
+  color: var(--text-muted);
+  border-color: var(--border);
+  cursor: default;
+  opacity: 0.4;
+}
+
+.teacher-tab-bar {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 480px;
+  display: flex;
+  background: #ffffff;
+  border-top: 1px solid var(--border);
+  z-index: 100;
+  height: 64px;
+}
+
+.teacher-tab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  text-decoration: none;
+  color: var(--text-muted);
+  padding: 8px 4px;
+  transition: color 0.12s;
+}
+
+.teacher-tab:not(:last-child) {
+  border-right: 1px solid var(--border);
+}
+
+.teacher-tab--active {
+  color: var(--accent);
+}
+
+.teacher-tab__label {
+  font-size: 11px;
+  font-weight: 600;
+}
+
+/* ─────────────────────────────────────────────────────────── */
 
 .parent-contact {
   margin-top: 28px;

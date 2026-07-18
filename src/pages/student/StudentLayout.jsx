@@ -1,10 +1,18 @@
 import { Outlet, useLocation, Link } from 'react-router-dom';
 
-function IconStudy() {
+function IconDaily() {
   return (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
       <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+    </svg>
+  );
+}
+
+function IconExam() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>
     </svg>
   );
 }
@@ -30,32 +38,37 @@ function IconSettings() {
   );
 }
 
-export default function ParentLayout() {
+export default function StudentLayout() {
   const { pathname } = useLocation();
 
-  const isStudy      = pathname.startsWith('/parent/study');
-  const isAttendance = pathname.startsWith('/parent/attendance');
-  const isSettings   = pathname.startsWith('/parent/settings');
+  const isDaily      = pathname.startsWith('/student/daily');
+  const isExam       = pathname.startsWith('/student/exam');
+  const isAttendance = pathname.startsWith('/student/attendance');
+  const isSettings   = pathname.startsWith('/student/settings');
 
   function tabCls(active) {
     return `teacher-tab${active ? ' teacher-tab--active' : ''}`;
   }
 
   return (
-    <div className="teacher-layout">
+    <div className="teacher-layout student-layout">
       <div className="teacher-layout__content">
         <Outlet />
       </div>
       <nav className="teacher-tab-bar">
-        <Link to="/parent/study" className={tabCls(isStudy)}>
-          <IconStudy />
-          <span className="teacher-tab__label">오늘학습</span>
+        <Link to="/student/daily"      className={tabCls(isDaily)}>
+          <IconDaily />
+          <span className="teacher-tab__label">일상공부</span>
         </Link>
-        <Link to="/parent/attendance" className={tabCls(isAttendance)}>
+        <Link to="/student/exam"       className={tabCls(isExam)}>
+          <IconExam />
+          <span className="teacher-tab__label">시험대비</span>
+        </Link>
+        <Link to="/student/attendance" className={tabCls(isAttendance)}>
           <IconAttendance />
           <span className="teacher-tab__label">출석</span>
         </Link>
-        <Link to="/parent/settings" className={tabCls(isSettings)}>
+        <Link to="/student/settings"   className={tabCls(isSettings)}>
           <IconSettings />
           <span className="teacher-tab__label">설정</span>
         </Link>

@@ -86,7 +86,7 @@ export default function StudyTextInput({ mode }) {
   const hasContent = Object.values(selected).some((t) => t.trim());
 
   return (
-    <div>
+    <div style={{ paddingBottom: 72 }}>
       <div className="subject-chips">
         {ALL_SUBJECTS.map((subject) => (
           <button
@@ -118,7 +118,9 @@ export default function StudyTextInput({ mode }) {
         </div>
       )}
 
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+      <div className="study-save-bar">
+        {status === 'saved' && <p className="state-message" style={{ margin: 0 }}>{savedMessage}</p>}
+        {status === 'error' && <p className="state-message state-message--error" style={{ margin: 0 }}>저장에 실패했습니다. 다시 시도해주세요.</p>}
         <button
           className="primary-button"
           onClick={handleSave}
@@ -126,8 +128,6 @@ export default function StudyTextInput({ mode }) {
         >
           {status === 'saving' ? '저장 중...' : '저장'}
         </button>
-        {status === 'saved' && <p className="state-message">{savedMessage}</p>}
-        {status === 'error' && <p className="state-message state-message--error">저장에 실패했습니다. 다시 시도해주세요.</p>}
       </div>
     </div>
   );

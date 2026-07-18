@@ -2,11 +2,11 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { loginStudent, loginTeacher, loginParent } from '../services/authService';
-import bookDeco from '../assets/book-deco.png';
-import logoHwarang from '../assets/logo-hwarang.png';
-import iconStudent from '../assets/icon-student.png';
-import iconParent from '../assets/icon-parent.png';
-import iconTeacher from '../assets/icon-teacher.png';
+import bgLogin from '../assets/bg-login.png';
+import btnStudent from '../assets/btn-student.png';
+import btnParent from '../assets/btn-parent.png';
+import btnTeacher from '../assets/btn-teacher.png';
+import iconBlog from '../assets/icon-blog.png';
 
 const ROLE_HOME = { student: '/student', teacher: '/teacher', parent: '/parent' };
 const NAME_PLACEHOLDER = { student: '학생 이름', parent: '자녀 이름' };
@@ -61,47 +61,30 @@ export default function LoginPage() {
   const needsName = role === 'student' || role === 'parent';
 
   return (
-    <div className="page">
-      <div className="login-hero">
-        <img src={logoHwarang} alt="화랑 Hwarang Mentoring" className="login-logo-hwarang" />
-        <img src={bookDeco} alt="" aria-hidden="true" className="login-deco-img" />
+    <div className="page login-bg-page" style={{ backgroundImage: `url(${bgLogin})`, backgroundSize: 'cover', backgroundPosition: 'top center', backgroundRepeat: 'no-repeat' }}>
+
+      <div className="login-role-list">
+        <button type="button" className="login-img-btn" onClick={() => chooseRole('student')}>
+          <img src={btnStudent} alt="학생으로 로그인" />
+        </button>
+        <button type="button" className="login-img-btn" onClick={() => chooseRole('parent')}>
+          <img src={btnParent} alt="학부모로 로그인" />
+        </button>
+        <button type="button" className="login-img-btn" onClick={() => chooseRole('teacher')}>
+          <img src={btnTeacher} alt="선생님으로 로그인" />
+        </button>
       </div>
 
-      <ul className="menu-list login-role-list">
-        <li>
-          <button type="button" onClick={() => chooseRole('student')}>
-            <span className="role-icon-box role-icon-box--student">
-              <img src={iconStudent} alt="" className="role-icon-img" />
-            </span>
-            <span className="role-text">
-              <span className="role-title">학생으로 로그인</span>
-            </span>
-            <span className="role-chevron">›</span>
-          </button>
-        </li>
-        <li>
-          <button type="button" onClick={() => chooseRole('parent')}>
-            <span className="role-icon-box role-icon-box--parent">
-              <img src={iconParent} alt="" className="role-icon-img" />
-            </span>
-            <span className="role-text">
-              <span className="role-title">학부모로 로그인</span>
-            </span>
-            <span className="role-chevron">›</span>
-          </button>
-        </li>
-        <li>
-          <button type="button" onClick={() => chooseRole('teacher')}>
-            <span className="role-icon-box role-icon-box--teacher">
-              <img src={iconTeacher} alt="" className="role-icon-img" />
-            </span>
-            <span className="role-text">
-              <span className="role-title">선생님으로 로그인</span>
-            </span>
-            <span className="role-chevron">›</span>
-          </button>
-        </li>
-      </ul>
+      <div className="login-social login-social--a">
+        <a href="https://www.youtube.com/@HwarangMT" target="_blank" rel="noopener noreferrer" className="login-social__btn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="#ff0000"><path d="M23.5 6.2s-.2-1.6-1-2.3c-.9-1-1.9-1-2.4-1C17.1 2.8 12 2.8 12 2.8s-5.1 0-8.1.1c-.5.1-1.5.1-2.4 1C.7 4.6.5 6.2.5 6.2S.3 8 .3 9.9v1.8c0 1.8.2 3.7.2 3.7s.2 1.6 1 2.3c.9 1 2.1.9 2.6 1C5.6 18.9 12 19 12 19s5.1 0 8.1-.2c.5-.1 1.5-.1 2.4-1 .8-.7 1-2.3 1-2.3s.2-1.8.2-3.7V9.9c0-1.9-.2-3.7-.2-3.7zM9.7 14.5V8.4l6.6 3.1-6.6 3z"/></svg>
+          유튜브
+        </a>
+        <a href="https://blog.naver.com/ojs_lovehouse" target="_blank" rel="noopener noreferrer" className="login-social__btn">
+          <img src={iconBlog} alt="블로그" width="18" height="18" style={{ borderRadius: 4 }} />
+          블로그
+        </a>
+      </div>
 
       {role !== null && (
         <div
