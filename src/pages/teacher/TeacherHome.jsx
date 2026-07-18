@@ -59,21 +59,33 @@ export default function TeacherHome() {
 
   useEffect(() => {
     if (!students?.length) return;
-    let cancelled = false;
     const today = todayString();
-    Promise.all(students.map((s) => getDailyLog(s.studentId, today).catch(() => null)))
-      .then((logs) => {
-        if (cancelled) return;
-        const map = new Map();
-        students.forEach((s, i) => {
-          const log = logs[i];
-          if (!log?.attendanceRequestedAt) map.set(s.studentId, 'none');
-          else if (!log.attendanceConfirmedAt) map.set(s.studentId, 'pending');
-          else if (!log.reportSentAt) map.set(s.studentId, 'studying');
-          else map.set(s.studentId, 'departed');
+    const map = new Map();
+    students.forEach((s) => {
+      const att = s.logAttendance?.[today];
+      if (!att) map.set(s.studentId, 'none');
+      else if (att === 'pending') map.set(s.studentId, 'pending');
+      else map.set(s.studentId, 'studying');
+    });
+    setStatusMap(map);
+
+    // confirmed 학생만 getDailyLog로 studying/departed 구분
+    let cancelled = false;
+    const confirmed = students.filter((s) => s.logAttendance?.[today] === 'confirmed');
+    if (confirmed.length > 0) {
+      Promise.all(confirmed.map((s) => getDailyLog(s.studentId, today).catch(() => null)))
+        .then((logs) => {
+          if (cancelled) return;
+          setStatusMap((prev) => {
+            const next = new Map(prev);
+            confirmed.forEach((s, i) => {
+              const log = logs[i];
+              next.set(s.studentId, log?.reportSentAt ? 'departed' : 'studying');
+            });
+            return next;
+          });
         });
-        setStatusMap(map);
-      });
+    }
     return () => { cancelled = true; };
   }, [students]);
 

@@ -87,14 +87,14 @@ export default function LoginPage() {
       {role !== null && (
         <div
           onClick={closePopup}
-          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }}
+          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', paddingTop: '12vh', paddingBottom: 16, overflowY: 'auto', zIndex: 9999 }}
         >
           <div
             onClick={(e) => e.stopPropagation()}
             style={{ background: '#fff', borderRadius: 16, padding: '28px 24px', width: '85%', maxWidth: 340 }}
           >
             <h2 style={{ margin: '0 0 20px', fontSize: 18, textAlign: 'center' }}>{ROLE_LABEL[role]}</h2>
-            <form style={{ display: 'flex', flexDirection: 'column', gap: 12 }} onSubmit={handleSubmit}>
+            <form style={{ display: 'flex', flexDirection: 'column', gap: 12 }} autoComplete="off" onSubmit={handleSubmit}>
               {needsName && (
                 <input
                   type="text"
@@ -102,6 +102,7 @@ export default function LoginPage() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   autoFocus
+                  autoComplete="off"
                   style={{ padding: 12, fontSize: 16, borderRadius: 10, border: '1px solid #ddd', textAlign: 'center' }}
                 />
               )}
@@ -112,6 +113,7 @@ export default function LoginPage() {
                 value={code}
                 onChange={(e) => setCode(e.target.value)}
                 autoFocus={role === 'teacher'}
+                autoComplete="new-password"
                 style={{ padding: 12, fontSize: 16, borderRadius: 10, border: '1px solid #ddd', textAlign: 'center', letterSpacing: 4 }}
               />
               <button

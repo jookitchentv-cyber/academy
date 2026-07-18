@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { getDailyLog, saveStudentEntry, saveStudentPlan } from '../../services/dailyLogsService';
+import { getDailyLog, saveStudentEntry, saveStudentPlan, getAttendanceMap } from '../../services/dailyLogsService';
 import { SUBJECTS } from '../../constants/subjects';
 import { todayString } from '../../utils/date';
 import Loading from '../../components/common/Loading';
@@ -71,6 +71,11 @@ export default function StudyTextInput({ mode }) {
   async function handleSave() {
     const hasContent = Object.values(selected).some((t) => t.trim());
     if (!hasContent) return;
+    const attendanceMap = await getAttendanceMap(session.studentId).catch(() => new Map());
+    if (!attendanceMap.has(todayString())) {
+      setStatus('no-attendance');
+      return;
+    }
     setStatus('saving');
     try {
       await save(session.studentId, todayString(), selected);
@@ -120,6 +125,7 @@ export default function StudyTextInput({ mode }) {
 
       <div className="study-save-bar">
         {status === 'saved' && <p className="state-message" style={{ margin: 0 }}>{savedMessage}</p>}
+        {status === 'no-attendance' && <p className="state-message state-message--error" style={{ margin: 0 }}>출석 확인을 먼저 해주세요.</p>}
         {status === 'error' && <p className="state-message state-message--error" style={{ margin: 0 }}>저장에 실패했습니다. 다시 시도해주세요.</p>}
         <button
           className="primary-button"

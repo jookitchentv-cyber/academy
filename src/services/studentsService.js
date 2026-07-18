@@ -1,4 +1,4 @@
-import { collection, getDocs, doc, getDoc, addDoc, updateDoc, deleteDoc, query, where, serverTimestamp } from 'firebase/firestore';
+import { collection, getDocs, doc, getDoc, addDoc, updateDoc, deleteDoc, query, where, serverTimestamp, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase/config';
 
 export async function listStudents() {
@@ -45,4 +45,17 @@ export async function deleteStudent(studentId) {
 
 export async function updateStudentMemo(studentId, memo) {
   await updateDoc(doc(db, 'students', studentId), { memo: memo || '' });
+}
+
+export function subscribeStudents(callback, onError) {
+  return onSnapshot(
+    collection(db, 'students'),
+    (snap) => {
+      const students = snap.docs
+        .map((d) => ({ studentId: d.id, ...d.data() }))
+        .sort((a, b) => (b.createdAt?.toMillis?.() ?? 0) - (a.createdAt?.toMillis?.() ?? 0));
+      callback(students);
+    },
+    onError,
+  );
 }
