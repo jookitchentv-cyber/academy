@@ -58,7 +58,31 @@ body {
 
 @media (max-width: 380px) {
   .page {
-    padding: 14px 14px 32px;
+    padding: 14px 6px 32px;
+  }
+  .page-header h1 {
+    font-size: 16px;
+  }
+  .teacher-student-name {
+    font-size: 15px;
+  }
+  .teacher-student-action {
+    padding: 6px 7px;
+    min-width: 44px;
+  }
+  .teacher-student-action span {
+    font-size: 9px;
+  }
+  .subject-chip {
+    padding: 6px 12px;
+    font-size: 13px;
+  }
+  .tabs a {
+    font-size: 12px;
+    padding: 8px 4px;
+  }
+  .date-nav__label {
+    font-size: 13px;
   }
 }
 
@@ -78,7 +102,7 @@ body {
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
-  font-size: 19px;
+  font-size: clamp(16px, 4.5vw, 19px);
   margin: 0;
   white-space: nowrap;
   pointer-events: none;
@@ -147,6 +171,29 @@ body {
   }
   .login-img-btn {
     width: 70%;
+  }
+}
+
+/* 화면 높이 짧은 폰 (갤럭시 폴드 등) */
+@media (max-height: 680px) {
+  .login-bg-page {
+    padding-top: 15vh;
+    padding-bottom: 60px;
+  }
+  .login-bg-page .login-role-list {
+    margin-bottom: 28px;
+    gap: 7px;
+  }
+  .login-img-btn {
+    width: 62%;
+  }
+}
+
+/* 화면 높이 긴 폰 (아이폰 15 Pro Max 등) */
+@media (min-height: 900px) {
+  .login-bg-page {
+    padding-top: 32vh;
+    padding-bottom: 120px;
   }
 }
 
@@ -1035,7 +1082,7 @@ button.calendar-cell {
 }
 
 .teacher-student-name {
-  font-size: 17px;
+  font-size: clamp(14px, 4vw, 17px);
   font-weight: 700;
   color: var(--text-primary);
 }
