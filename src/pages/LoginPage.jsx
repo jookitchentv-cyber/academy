@@ -6,7 +6,6 @@ import bgLogin from '../assets/bg-login.png';
 import btnStudent from '../assets/btn-student.png';
 import btnParent from '../assets/btn-parent.png';
 import btnTeacher from '../assets/btn-teacher.png';
-import iconBlog from '../assets/icon-blog.png';
 
 const ROLE_HOME = { student: '/student', teacher: '/teacher', parent: '/parent' };
 const NAME_PLACEHOLDER = { student: '학생 이름', parent: '자녀 이름' };
@@ -75,13 +74,12 @@ export default function LoginPage() {
         </button>
       </div>
 
-      <div className="login-social login-social--a">
-        <a href="https://www.youtube.com/@HwarangMT" target="_blank" rel="noopener noreferrer" className="login-social__btn">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="#ff0000"><path d="M23.5 6.2s-.2-1.6-1-2.3c-.9-1-1.9-1-2.4-1C17.1 2.8 12 2.8 12 2.8s-5.1 0-8.1.1c-.5.1-1.5.1-2.4 1C.7 4.6.5 6.2.5 6.2S.3 8 .3 9.9v1.8c0 1.8.2 3.7.2 3.7s.2 1.6 1 2.3c.9 1 2.1.9 2.6 1C5.6 18.9 12 19 12 19s5.1 0 8.1-.2c.5-.1 1.5-.1 2.4-1 .8-.7 1-2.3 1-2.3s.2-1.8.2-3.7V9.9c0-1.9-.2-3.7-.2-3.7zM9.7 14.5V8.4l6.6 3.1-6.6 3z"/></svg>
+      <div className="login-social login-social--b">
+        <a href="https://www.youtube.com/@HwarangMT" target="_blank" rel="noopener noreferrer" className="login-social__link">
           유튜브
         </a>
-        <a href="https://blog.naver.com/ojs_lovehouse" target="_blank" rel="noopener noreferrer" className="login-social__btn">
-          <img src={iconBlog} alt="블로그" width="18" height="18" style={{ borderRadius: 4 }} />
+        <span className="login-social__divider" />
+        <a href="https://blog.naver.com/ojs_lovehouse" target="_blank" rel="noopener noreferrer" className="login-social__link">
           블로그
         </a>
       </div>

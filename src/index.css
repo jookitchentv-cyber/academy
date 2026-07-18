@@ -205,9 +205,37 @@ body {
   margin-bottom: 32px;
 }
 
+.login-social--b {
+  margin-top: 20px;
+  margin-bottom: 32px;
+  gap: 0;
+}
+
+.login-social--b .login-social__link {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: #555;
+  text-decoration: none;
+  padding: 4px 20px;
+  transition: color 0.2s;
+}
+
+.login-social--b .login-social__link:hover {
+  color: #222;
+}
+
+.login-social__divider {
+  display: inline-block;
+  width: 1px;
+  height: 13px;
+  background: #aaa;
+  vertical-align: middle;
+}
+
 .login-img-btn {
   display: block;
-  width: 70%;
+  width: 60%;
   margin: 0 auto;
   background: none;
   border: none;
