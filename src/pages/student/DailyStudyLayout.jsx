@@ -46,9 +46,9 @@ export default function DailyStudyLayout() {
 
   return (
     <div className="page">
-      <div className="page-header">
+      <div className="page-header" style={{ justifyContent: 'flex-end' }}>
         <h1>일상 공부</h1>
-        <button onClick={handleClick} style={{ ...btnStyle, marginLeft: 'auto' }}>{btnLabel}</button>
+        <button onClick={handleClick} style={btnStyle}>{btnLabel}</button>
       </div>
       <nav className="tabs">
         <NavLink to="plan" className={({ isActive }) => (isActive ? 'active' : '')}>
