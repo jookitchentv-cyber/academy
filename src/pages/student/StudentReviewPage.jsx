@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { getDailyLog, listDailyLogs } from '../../services/dailyLogsService';
 import { getStudent } from '../../services/studentsService';
-import { formatDateLabel, todayString } from '../../utils/date';
+import { formatDateLabel, formatDateShort, todayString } from '../../utils/date';
 import { mergeSubjectsWithPlan } from '../../utils/subjectsMap';
 import OverallStackedBar from '../../components/charts/OverallStackedBar';
 import SubjectMeter from '../../components/charts/SubjectMeter';
@@ -31,6 +31,7 @@ export default function StudentReviewPage() {
   const [showList, setShowList] = useState(false);
   const [listLogs, setListLogs] = useState(null);
   const [memo, setMemo] = useState('');
+  const [studentName, setStudentName] = useState('');
 
   useEffect(() => {
     let cancelled = false;
@@ -43,7 +44,10 @@ export default function StudentReviewPage() {
   }, [session.studentId, date]);
 
   useEffect(() => {
-    getStudent(session.studentId).then((s) => { if (s?.memo) setMemo(s.memo); }).catch(() => {});
+    getStudent(session.studentId).then((s) => {
+      if (s?.memo) setMemo(s.memo);
+      if (s?.name) setStudentName(s.name);
+    }).catch(() => {});
   }, [session.studentId]);
 
   useEffect(() => {
@@ -80,7 +84,8 @@ export default function StudentReviewPage() {
       <div className="date-nav">
         <button className="date-nav__btn" onClick={() => prevDate && goTo(prevDate)} disabled={!prevDate}>‹</button>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <span className="date-nav__label">{formatDateLabel(date)}</span>
+          {studentName && <span className="date-nav__label" style={{ fontWeight: 700 }}>{studentName}</span>}
+          <span className="date-nav__label">{formatDateShort(date)}</span>
           <button
             onClick={() => setShowList(true)}
             style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2, color: 'var(--text-muted)', display: 'flex', alignItems: 'center', position: 'relative', top: 1 }}

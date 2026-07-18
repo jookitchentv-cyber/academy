@@ -11,3 +11,8 @@ export function formatDateLabel(dateString) {
   const [y, m, d] = dateString.split('-');
   return `${y}년 ${Number(m)}월 ${Number(d)}일`;
 }
+
+export function formatDateShort(dateString) {
+  const [y, m, d] = dateString.split('-');
+  return `${String(y).slice(2)}년 ${Number(m)}월 ${Number(d)}일`;
+}
