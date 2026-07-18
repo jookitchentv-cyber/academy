@@ -117,6 +117,8 @@ export default function StudyTextInput({ mode }) {
                 placeholder={placeholder(subject)}
                 value={selected[subject]}
                 onChange={(e) => handleTextChange(subject, e.target.value)}
+                autoComplete="off"
+                data-form-type="other"
               />
             </div>
           ))}

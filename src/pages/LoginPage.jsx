@@ -107,14 +107,15 @@ export default function LoginPage() {
                 />
               )}
               <input
-                type="password"
+                type="text"
                 inputMode="numeric"
                 placeholder="코드"
                 value={code}
                 onChange={(e) => setCode(e.target.value)}
                 autoFocus={role === 'teacher'}
-                autoComplete="new-password"
-                style={{ padding: 12, fontSize: 16, borderRadius: 10, border: '1px solid #ddd', textAlign: 'center', letterSpacing: 4 }}
+                autoComplete="off"
+                data-form-type="other"
+                style={{ padding: 12, fontSize: 16, borderRadius: 10, border: '1px solid #ddd', textAlign: 'center', letterSpacing: 4, WebkitTextSecurity: 'disc' }}
               />
               <button
                 type="submit"
