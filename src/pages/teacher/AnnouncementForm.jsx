@@ -55,7 +55,14 @@ export default function AnnouncementForm() {
     setSelectedDate(date);
     setType(existing?.type ?? 'cancel');
     setNote(existing?.note ?? '');
-    setSelected(new Set(existing?.targetStudentIds ?? []));
+    if (existing) {
+      const allIds = students?.map((s) => s.studentId) ?? [];
+      const savedIds = existing.targetStudentIds ?? [];
+      const isAll = allIds.length > 0 && allIds.every((id) => savedIds.includes(id));
+      setSelected(isAll ? new Set() : new Set(savedIds));
+    } else {
+      setSelected(new Set());
+    }
     setSaveStatus('idle');
   }
 
@@ -150,6 +157,17 @@ export default function AnnouncementForm() {
                       {opt.label}
                     </button>
                   ))}
+                  {existing && (
+                    <button
+                      type="button"
+                      className="subject-chip"
+                      onClick={handleRemove}
+                      disabled={saveStatus === 'saving'}
+                      style={{ color: 'var(--danger)', borderColor: 'var(--danger)' }}
+                    >
+                      해제
+                    </button>
+                  )}
                 </div>
               </div>
 
@@ -190,26 +208,13 @@ export default function AnnouncementForm() {
                 </div>
               </div>
 
-              <div style={{ display: 'flex', gap: 8 }}>
-                <button
-                  className="primary-button"
-                  onClick={handleSave}
-                  disabled={saveStatus === 'saving'}
-                  style={{ flex: 1 }}
-                >
-                  {saveStatus === 'saving' ? '저장 중...' : existing ? '수정' : '등록'}
-                </button>
-                {existing && (
-                  <button
-                    className="logout-button"
-                    onClick={handleRemove}
-                    disabled={saveStatus === 'saving'}
-                    style={{ color: 'var(--danger)', borderColor: 'var(--danger)' }}
-                  >
-                    해제
-                  </button>
-                )}
-              </div>
+              <button
+                className="primary-button"
+                onClick={handleSave}
+                disabled={saveStatus === 'saving'}
+              >
+                {saveStatus === 'saving' ? '저장 중...' : existing ? '수정' : '등록'}
+              </button>
 
               {saveStatus === 'error' && (
                 <p className="state-message state-message--error">

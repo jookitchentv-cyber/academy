@@ -7,10 +7,17 @@ function invalidateTeacher(teacherId) {
   cache.delete('teacher:' + teacherId);
 }
 
+function invalidateAllStudentCaches() {
+  for (const key of cache.keys()) {
+    if (key.startsWith('student:')) cache.delete(key);
+  }
+}
+
 export async function saveAnnouncement(teacherId, { date, type, note, targetStudentIds }) {
   const ref = doc(db, 'teacherAnnouncements', `${teacherId}_${date}`);
   await setDoc(ref, { teacherId, date, type, note: note || '', targetStudentIds, updatedAt: serverTimestamp() });
   invalidateTeacher(teacherId);
+  invalidateAllStudentCaches();
 }
 
 export async function listAnnouncementsForTeacher(teacherId) {
@@ -38,6 +45,7 @@ export async function removeAnnouncement(teacherId, date, studentIdsToRemove) {
   if (studentIdsToRemove.length === 0) {
     await deleteDoc(ref);
     invalidateTeacher(teacherId);
+    invalidateAllStudentCaches();
     return;
   }
   const snap = await getDoc(ref);
@@ -49,6 +57,7 @@ export async function removeAnnouncement(teacherId, date, studentIdsToRemove) {
     await updateDoc(ref, { targetStudentIds: remaining, updatedAt: serverTimestamp() });
   }
   invalidateTeacher(teacherId);
+  invalidateAllStudentCaches();
 }
 
 export function buildAnnouncementMap(announcements) {
