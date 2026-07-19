@@ -147,12 +147,11 @@ export async function saveStudentEntry(studentId, date, selections) {
     };
   }
 
-  const payload = { rawText, subjects: subjectsMap, departureTime: serverTimestamp(), updatedAt: serverTimestamp() };
-  if (!existing.exists()) {
-    await setDoc(ref, { studentId, date, ...payload });
-  } else {
-    await updateDoc(ref, payload);
-  }
+  await setDoc(
+    ref,
+    { studentId, date, rawText, subjects: subjectsMap, departureTime: serverTimestamp(), updatedAt: serverTimestamp() },
+    { mergeFields: ['studentId', 'date', 'rawText', 'subjects', 'departureTime', 'updatedAt'] },
+  );
   await updateStudentIndex(studentId, date);
 }
 
@@ -171,13 +170,11 @@ export async function saveStudentPlan(studentId, date, selections) {
     subjectsMap[subject] = { rawText: text };
   }
 
-  const plan = { rawText, subjects: subjectsMap };
-  const existing = await getDoc(ref);
-  if (!existing.exists()) {
-    await setDoc(ref, { studentId, date, plan, updatedAt: serverTimestamp() });
-  } else {
-    await updateDoc(ref, { plan, updatedAt: serverTimestamp() });
-  }
+  await setDoc(
+    ref,
+    { studentId, date, plan: { rawText, subjects: subjectsMap }, updatedAt: serverTimestamp() },
+    { mergeFields: ['studentId', 'date', 'plan', 'updatedAt'] },
+  );
   await updateStudentIndex(studentId, date);
 }
 
