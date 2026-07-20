@@ -1,11 +1,9 @@
 import { useState } from 'react';
-import { useTeacher } from '../../context/TeacherContext';
 import { createStudent, isCodeTaken, isParentCodeTaken } from '../../services/studentsService';
 
 const GRADES = ['중1', '중2', '중3', '고1', '고2', '고3'];
 
 export default function StudentFormModal({ onClose }) {
-  const { refresh } = useTeacher();
   const [name, setName] = useState('');
   const [grade, setGrade] = useState('');
   const [code, setCode] = useState('');
@@ -27,7 +25,6 @@ export default function StudentFormModal({ onClose }) {
       if (parentTaken) { setStatus('parent_code_taken'); return; }
       setStatus('saving');
       await createStudent({ name: name.trim(), grade, code, parentCode, phone: phone.trim() });
-      refresh();
       onClose();
     } catch {
       setStatus('error');

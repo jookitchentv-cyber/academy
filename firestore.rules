@@ -24,5 +24,8 @@ service cloud.firestore {
     match /dailyLogs/{id} {
       allow read, write: if true;
     }
+    match /teacherAnnouncements/{id} {
+      allow read, write: if true;
+    }
   }
 }
