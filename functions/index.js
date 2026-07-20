@@ -123,7 +123,7 @@ exports.sendAttendanceAlim = onDocumentUpdated('dailyLogs/{docId}', async (event
 
   await sendMessage(
     parent.phone,
-    'cWR535CZIk',
+    'KA01TP2607161159295672WvSkLzOiFO',
     {
       '#{학생이름}':       student.name,
       '#{등원날짜및시간}': arrivalStr,
@@ -162,7 +162,7 @@ exports.sendDailyReport = onCall(async (request) => {
   try {
     await sendMessage(
       parent.phone,
-      'XoPPslsplZ',
+      'KA01TP260716120728528Ht5OBcxDCGy',
       {
         '#{학생이름}':    student.name,
         '#{하원날짜시간}': departureStr,
