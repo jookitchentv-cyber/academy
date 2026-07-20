@@ -10,6 +10,7 @@ import {
   documentId,
   getDocs,
   arrayUnion,
+  onSnapshot,
 } from 'firebase/firestore';
 import { db } from '../firebase/config';
 import { subjectsMapToOrderedArray } from '../utils/subjectsMap';
@@ -120,6 +121,11 @@ export async function getAttendanceMap(studentId) {
 export async function getDailyLog(studentId, date) {
   const snap = await getDoc(doc(db, 'dailyLogs', logDocId(studentId, date)));
   return fromSnap(snap);
+}
+
+export function subscribeDailyLog(studentId, date, onUpdate, onError) {
+  const ref = doc(db, 'dailyLogs', logDocId(studentId, date));
+  return onSnapshot(ref, (snap) => onUpdate(fromSnap(snap)), onError);
 }
 
 // 날짜·출결 인덱스 업데이트

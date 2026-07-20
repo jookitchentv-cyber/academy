@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { httpsCallable } from 'firebase/functions';
-import { getDailyLog, listDailyLogs, saveTeacherRatings } from '../../services/dailyLogsService';
+import { subscribeDailyLog, listDailyLogs, saveTeacherRatings } from '../../services/dailyLogsService';
 import { functions } from '../../firebase/config';
 import { formatDateLabel, todayString } from '../../utils/date';
 import { FALLBACK_SUBJECT } from '../../constants/subjects';
@@ -31,12 +31,16 @@ export default function TeacherDateDetail() {
   const [allDates, setAllDates] = useState([]);
 
   useEffect(() => {
-    let cancelled = false;
-    getDailyLog(studentId, date)
-      .then((data) => {
-        if (cancelled) return;
+    let isFirst = true;
+    setLog(undefined);
+    setError('');
+    const unsub = subscribeDailyLog(
+      studentId,
+      date,
+      (data) => {
         setLog(data);
-        if (data) {
+        if (data && isFirst) {
+          isFirst = false;
           const initial = {};
           for (const s of mergeSubjectsWithPlan(data.subjects, data.plan)) {
             initial[s.subject] = toInputValue(s.percent);
@@ -44,9 +48,10 @@ export default function TeacherDateDetail() {
           setInputs(initial);
           setComment(data.comment ?? '');
         }
-      })
-      .catch(() => { if (!cancelled) setError('기록을 불러오지 못했습니다.'); });
-    return () => { cancelled = true; };
+      },
+      () => setError('기록을 불러오지 못했습니다.'),
+    );
+    return unsub;
   }, [studentId, date]);
 
   useEffect(() => {
