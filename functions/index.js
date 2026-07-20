@@ -187,7 +187,10 @@ exports.sendDailyReport = onCall(async (request) => {
     throw new HttpsError('internal', `메시지 전송 실패: ${e.message}`);
   }
 
-  await docRef.update({ reportSentAt: FieldValue.serverTimestamp() });
+  await Promise.all([
+    docRef.update({ reportSentAt: FieldValue.serverTimestamp() }),
+    db.collection('students').doc(studentId).update({ [`logAttendance.${date}`]: 'departed' }),
+  ]);
 
   console.log(`하원 보고 발송 완료: ${student.name} / ${date}`);
   return { success: true };
