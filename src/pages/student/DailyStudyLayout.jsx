@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { getAttendanceMap, requestAttendance } from '../../services/dailyLogsService';
+import { subscribeTodayAttendance, requestAttendance } from '../../services/dailyLogsService';
 import { todayString } from '../../utils/date';
 
 export default function DailyStudyLayout() {
@@ -11,9 +11,8 @@ export default function DailyStudyLayout() {
   const [requesting, setRequesting] = useState(false);
 
   useEffect(() => {
-    getAttendanceMap(session.studentId)
-      .then((map) => setStatus(map.get(todayString()) ?? 'none'))
-      .catch(() => {});
+    const unsub = subscribeTodayAttendance(session.studentId, todayString(), setStatus);
+    return unsub;
   }, [session.studentId]);
 
   async function handleClick() {

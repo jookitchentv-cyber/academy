@@ -128,6 +128,18 @@ export function subscribeDailyLog(studentId, date, onUpdate, onError) {
   return onSnapshot(ref, (snap) => onUpdate(fromSnap(snap)), onError);
 }
 
+export function subscribeTodayAttendance(studentId, date, onUpdate) {
+  const ref = doc(db, 'dailyLogs', logDocId(studentId, date));
+  return onSnapshot(ref, (snap) => {
+    if (!snap.exists()) { onUpdate('none'); return; }
+    const d = snap.data();
+    onUpdate(getAttendanceStatus({
+      attendanceRequestedAt: d.attendanceRequestedAt,
+      attendanceConfirmedAt: d.attendanceConfirmedAt,
+    }));
+  });
+}
+
 // 날짜·출결 인덱스 업데이트
 async function updateStudentIndex(studentId, date, attendanceStatus = null) {
   const updates = { logDates: arrayUnion(date) };
