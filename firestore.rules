@@ -11,15 +11,15 @@ service cloud.firestore {
     // 개발자 도구로 직접 Firestore를 호출하면 코멘트를 볼 수 있다.
     match /students/{id} {
       allow read: if true;
-      allow write: if false; // 콘솔에서 수동으로 시딩
+      allow write: if true;
     }
     match /teachers/{id} {
       allow read: if true;
-      allow write: if false; // 콘솔에서 수동으로 시딩
+      allow write: if false;
     }
     match /parents/{id} {
       allow read: if true;
-      allow write: if false; // 콘솔에서 수동으로 시딩
+      allow write: if false;
     }
     match /dailyLogs/{id} {
       allow read, write: if true;
