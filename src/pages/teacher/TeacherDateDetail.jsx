@@ -204,7 +204,7 @@ export default function TeacherDateDetail() {
               <h3>코멘트 (학부모에게 공개, 학생에게는 비공개)</h3>
               <textarea
                 className="study-input"
-                style={{ minHeight: 80 }}
+                style={{ minHeight: 330, resize: 'none' }}
                 placeholder="학부모에게만 보여줄 코멘트를 적어주세요."
                 value={comment}
                 onChange={(e) => { setComment(e.target.value); setSaveStatus('idle'); }}

@@ -30,73 +30,71 @@ export default function OverallStackedBar({ subjects }) {
 
   return (
     <div className="overall-chart">
-      {/* 도넛 + 중앙 텍스트 */}
-      <div style={{ position: 'relative', height: 152 }}>
-        <ResponsiveContainer width="100%" height={152}>
-          <PieChart>
-            <Pie
-              data={data}
-              cx="50%"
-              cy="50%"
-              innerRadius={54}
-              outerRadius={76}
-              dataKey="value"
-              startAngle={90}
-              endAngle={450}
-              stroke="var(--chart-surface)"
-              strokeWidth={2}
-              onMouseEnter={(entry) => handleMouseEnter(entry)}
-              onMouseLeave={() => setHovered(null)}
-            >
-              {data.map((entry) => (
-                <Cell
-                  key={entry.name}
-                  fill={entry.name === REST_KEY ? 'rgba(11,11,11,0.08)' : getSubjectColor(entry.name)}
-                />
-              ))}
-            </Pie>
-          </PieChart>
-        </ResponsiveContainer>
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 20 }}>
+        {/* 도넛 + 중앙 텍스트 */}
+        <div style={{ position: 'relative', width: 160, height: 160, flexShrink: 0 }}>
+          <ResponsiveContainer width={160} height={160}>
+            <PieChart>
+              <Pie
+                data={data}
+                cx="50%"
+                cy="50%"
+                innerRadius={54}
+                outerRadius={76}
+                dataKey="value"
+                startAngle={90}
+                endAngle={450}
+                stroke="var(--chart-surface)"
+                strokeWidth={2}
+                onMouseEnter={(entry) => handleMouseEnter(entry)}
+                onMouseLeave={() => setHovered(null)}
+              >
+                {data.map((entry) => (
+                  <Cell
+                    key={entry.name}
+                    fill={entry.name === REST_KEY ? 'rgba(11,11,11,0.08)' : getSubjectColor(entry.name)}
+                  />
+                ))}
+              </Pie>
+            </PieChart>
+          </ResponsiveContainer>
 
-        {/* 중앙 텍스트 — inset:0 + flex center로 완벽 중앙 */}
-        <div style={{
-          position: 'absolute',
-          inset: 0,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          pointerEvents: 'none',
-        }}>
-          <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>전체</span>
-          <span style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)' }}>
-            {overall === null ? '미평가' : `${overall}%`}
-          </span>
-        </div>
-      </div>
-
-      {/* 호버 툴팁 — 차트 바깥 아래에 표시 */}
-      <div style={{ height: 44, display: 'flex', alignItems: 'center', justifyContent: 'center', paddingTop: 10 }}>
-        {hovered && (
-          <div style={{ background: '#fff', border: '1px solid #ddd', padding: '8px 14px', borderRadius: 6, fontSize: 13, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-            <span style={{ width: 8, height: 8, borderRadius: '50%', background: hovered.color, display: 'inline-block', flexShrink: 0 }} />
-            {hovered.name}: {hovered.percent !== null ? `${hovered.percent}%` : '미평가'}
+          {/* 중앙 텍스트 */}
+          <div style={{
+            position: 'absolute',
+            inset: 0,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            pointerEvents: 'none',
+          }}>
+            <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>전체</span>
+            <span style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)' }}>
+              {overall === null ? '미평가' : `${overall}%`}
+            </span>
           </div>
-        )}
-      </div>
+        </div>
 
-      {/* 범례 */}
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px 12px', fontSize: 12, color: 'var(--text-secondary)', justifyContent: 'center', lineHeight: '1.8', marginTop: 4 }}>
-        {slices.map((s) => (
-          <span key={s.name} style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-            <span style={{ width: 8, height: 8, borderRadius: '50%', background: getSubjectColor(s.name), flexShrink: 0, display: 'inline-block' }} />
-            {s.name}
+        {/* 우측 세로 범례 */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6, fontSize: 13, color: 'var(--text-secondary)' }}>
+          {slices.map((s) => (
+            <span key={s.name} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <span style={{ width: 9, height: 9, borderRadius: '50%', background: getSubjectColor(s.name), flexShrink: 0 }} />
+              {s.name}
+            </span>
+          ))}
+          <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <span style={{ width: 9, height: 9, borderRadius: '50%', background: '#9ca3af', flexShrink: 0 }} />
+            나머지
           </span>
-        ))}
-        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-          <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#9ca3af', flexShrink: 0, display: 'inline-block' }} />
-          나머지
-        </span>
+          {hovered && (
+            <div style={{ marginTop: 6, padding: '6px 10px', background: '#fff', border: '1px solid #ddd', borderRadius: 6, fontSize: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
+              <span style={{ width: 8, height: 8, borderRadius: '50%', background: hovered.color, flexShrink: 0 }} />
+              {hovered.name}: {hovered.percent !== null ? `${hovered.percent}%` : '미평가'}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
