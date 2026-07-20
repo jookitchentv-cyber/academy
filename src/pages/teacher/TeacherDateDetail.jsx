@@ -230,13 +230,10 @@ export default function TeacherDateDetail() {
                   <button
                     className="primary-button"
                     onClick={handleSendReport}
-                    disabled={sendStatus === 'sending' || !log.departureTime || !comment.trim()}
+                    disabled={sendStatus === 'sending' || !comment.trim()}
                   >
                     {sendStatus === 'sending' ? '전송 중...' : '부모님께 전송'}
                   </button>
-                  {!log.departureTime && (
-                    <p className="hint" style={{ marginTop: 6 }}>학생이 아직 학습량을 저장하지 않았습니다.</p>
-                  )}
                   {sendStatus === 'sent' && <p className="state-message">전송이 완료되었습니다.</p>}
                   {sendStatus === 'error' && (
                     <p className="state-message state-message--error">전송 실패: {sendError}</p>

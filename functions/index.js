@@ -152,12 +152,23 @@ exports.sendDailyReport = onCall(async (request) => {
   if (!student?.name)   throw new HttpsError('not-found', '학생 정보가 없습니다.');
 
   const log = logSnap.data();
-  if (!log.departureTime) throw new HttpsError('failed-precondition', '하원 시간이 기록되지 않았습니다.');
-  if (!log.comment)       throw new HttpsError('failed-precondition', '선생님 피드백을 먼저 입력해주세요.');
+  if (!log.comment) throw new HttpsError('failed-precondition', '선생님 피드백을 먼저 입력해주세요.');
 
-  const departureStr = formatKoreanDateTime(log.departureTime);
-  const planText     = log.plan?.rawText ?? '작성 내용 없음';
-  const actualText   = log.rawText       ?? '작성 내용 없음';
+  // 하원 시간 = 전송 시각 (KST). 당일 전송이면 날짜+시각, 다음날 이후 전송이면 날짜만 표시.
+  const nowMs = Date.now();
+  const nowKST = new Date(nowMs + 9 * 60 * 60 * 1000);
+  const sendDate = [
+    nowKST.getUTCFullYear(),
+    String(nowKST.getUTCMonth() + 1).padStart(2, '0'),
+    String(nowKST.getUTCDate()).padStart(2, '0'),
+  ].join('-');
+  const [ly, lm, ld] = date.split('-');
+  const departureStr = sendDate === date
+    ? formatKoreanDateTime(new Date(nowMs))
+    : `${ly}년 ${Number(lm)}월 ${Number(ld)}일`;
+
+  const planText   = log.plan?.rawText ?? '작성 내용 없음';
+  const actualText = log.rawText       ?? '작성 내용 없음';
 
   try {
     await sendMessage(
