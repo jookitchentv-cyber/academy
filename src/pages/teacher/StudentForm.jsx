@@ -53,7 +53,8 @@ export default function StudentForm() {
         await createStudent({ name: name.trim(), grade, code, parentCode, phone: phone.trim() });
       }
       navigate('/teacher');
-    } catch {
+    } catch (e) {
+      console.error('StudentForm save error:', e);
       setStatus('error');
     }
   }
