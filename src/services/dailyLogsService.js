@@ -19,7 +19,16 @@ import { FALLBACK_SUBJECT } from '../constants/subjects';
 const logDocId = (studentId, date) => studentId + '_' + date;
 
 const cache = new Map();
+const CACHE_TTL = 60_000; // 60초
 const cacheKey = (type, ...args) => type + ':' + args.join(':');
+
+function cacheGet(key) {
+  const entry = cache.get(key);
+  if (!entry) return undefined;
+  if (Date.now() - entry.ts > CACHE_TTL) { cache.delete(key); return undefined; }
+  return entry.value;
+}
+function cacheSet(key, value) { cache.set(key, { value, ts: Date.now() }); }
 
 function invalidate(studentId, date) {
   cache.delete(cacheKey('log', studentId, date));
@@ -49,7 +58,8 @@ function fromSnap(snap) {
 // logDates 필드가 없는 기존 학생은 구 prefix 쿼리로 1회 마이그레이션.
 async function getStudentIndex(studentId) {
   const key = cacheKey('index', studentId);
-  if (cache.has(key)) return cache.get(key);
+  const cached = cacheGet(key);
+  if (cached !== undefined) return cached;
 
   const studentSnap = await getDoc(doc(db, 'students', studentId));
   const data = studentSnap.exists() ? studentSnap.data() : {};
@@ -93,7 +103,7 @@ async function getStudentIndex(studentId) {
   const sortedDates = [...dates].sort((a, b) => b.localeCompare(a)).map((date) => ({ date }));
   const attendanceMap = new Map(Object.entries(rawAttendance));
   const result = { dates: sortedDates, attendanceMap };
-  cache.set(key, result);
+  cacheSet(key, result);
   return result;
 }
 
@@ -108,12 +118,8 @@ export async function getAttendanceMap(studentId) {
 }
 
 export async function getDailyLog(studentId, date) {
-  const key = cacheKey('log', studentId, date);
-  if (cache.has(key)) return cache.get(key);
   const snap = await getDoc(doc(db, 'dailyLogs', logDocId(studentId, date)));
-  const result = fromSnap(snap);
-  cache.set(key, result);
-  return result;
+  return fromSnap(snap);
 }
 
 // 날짜·출결 인덱스 업데이트
