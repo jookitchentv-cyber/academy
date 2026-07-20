@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 import { getSubjectColor } from '../../constants/colors';
 import { computeOverallPercent } from '../../utils/computeOverallPercent';
@@ -13,20 +12,11 @@ export default function OverallStackedBar({ subjects }) {
   const slices = rated.map((s) => ({
     name: s.subject,
     value: ratedSum > 0 ? (s.percent / ratedSum) * (overall ?? 0) : 0,
+    percent: s.percent,
   }));
 
+  const restPct = Math.round((100 - (overall ?? 0)) * 10) / 10;
   const data = [...slices, { name: REST_KEY, value: 100 - (overall ?? 0) }];
-
-  const [hovered, setHovered] = useState(null);
-
-  function handleMouseEnter(entry) {
-    if (entry.name === REST_KEY) {
-      setHovered({ name: '나머지', percent: overall !== null ? 100 - overall : null, color: '#9ca3af' });
-    } else {
-      const s = subjects.find((x) => x.subject === entry.name);
-      setHovered({ name: entry.name, percent: typeof s?.percent === 'number' ? s.percent : null, color: getSubjectColor(entry.name) });
-    }
-  }
 
   return (
     <div className="overall-chart">
@@ -46,8 +36,8 @@ export default function OverallStackedBar({ subjects }) {
                 endAngle={450}
                 stroke="var(--chart-surface)"
                 strokeWidth={2}
-                onMouseEnter={(entry) => handleMouseEnter(entry)}
-                onMouseLeave={() => setHovered(null)}
+                isAnimationActive={false}
+                style={{ pointerEvents: 'none' }}
               >
                 {data.map((entry) => (
                   <Cell
@@ -77,23 +67,17 @@ export default function OverallStackedBar({ subjects }) {
         </div>
 
         {/* 우측 세로 범례 */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 6, fontSize: 13, color: 'var(--text-secondary)' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6, fontSize: 13 }}>
           {slices.map((s) => (
             <span key={s.name} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
               <span style={{ width: 9, height: 9, borderRadius: '50%', background: getSubjectColor(s.name), flexShrink: 0 }} />
-              {s.name}
+              <span style={{ color: getSubjectColor(s.name), fontWeight: 600 }}>{s.name} {Math.round(s.value * 10) / 10}%</span>
             </span>
           ))}
           <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <span style={{ width: 9, height: 9, borderRadius: '50%', background: '#9ca3af', flexShrink: 0 }} />
-            나머지
+            <span style={{ color: '#9ca3af' }}>나머지 {restPct}%</span>
           </span>
-          {hovered && (
-            <div style={{ marginTop: 6, padding: '6px 10px', background: '#fff', border: '1px solid #ddd', borderRadius: 6, fontSize: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
-              <span style={{ width: 8, height: 8, borderRadius: '50%', background: hovered.color, flexShrink: 0 }} />
-              {hovered.name}: {hovered.percent !== null ? `${hovered.percent}%` : '미평가'}
-            </div>
-          )}
         </div>
       </div>
     </div>

@@ -65,7 +65,9 @@ export default function StudentReviewPage() {
 
   const today = todayString();
   const currentIdx = allDates.indexOf(date);
-  const prevDate = currentIdx > 0 ? allDates[currentIdx - 1] : null;
+  // date가 allDates에 없으면(오늘 기록 없음) 마지막 위치로 간주해 이전 날짜 탐색 허용
+  const effectiveIdx = currentIdx !== -1 ? currentIdx : allDates.length;
+  const prevDate = effectiveIdx > 0 ? allDates[effectiveIdx - 1] : null;
   const nextDate = currentIdx !== -1 && currentIdx < allDates.length - 1 ? allDates[currentIdx + 1] : null;
 
   function goTo(d) {
