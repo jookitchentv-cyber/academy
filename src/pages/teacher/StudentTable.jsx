@@ -36,7 +36,7 @@ const tdStyle = {
 };
 
 export default function StudentTable() {
-  const { students, error, refresh } = useTeacher();
+  const { students, error } = useTeacher();
   const [showModal, setShowModal] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [drafts, setDrafts] = useState({});
@@ -61,7 +61,6 @@ export default function StudentTable() {
     setMemoSaving(true);
     try {
       await updateStudentMemo(studentId, memoDraft);
-      refresh();
       setExpandedMemoId(null);
     } catch {
       // keep open on error
@@ -105,7 +104,6 @@ export default function StudentTable() {
     setSaveError('');
     try {
       await deleteStudent(studentId);
-      refresh();
       setDeleteConfirm((prev) => {
         const next = new Set(prev);
         next.delete(studentId);
@@ -137,7 +135,6 @@ export default function StudentTable() {
         );
       });
       await Promise.all(changed.map((s) => updateStudent(s.studentId, drafts[s.studentId])));
-      refresh();
       setEditMode(false);
       setDrafts({});
     } catch {
@@ -153,7 +150,7 @@ export default function StudentTable() {
 
   if (error) return <ErrorMessage>{error}</ErrorMessage>;
 
-  const totalCols = editMode ? 8 : 7;
+  const totalCols = editMode ? 7 : 7;
 
   return (
     <div className="page">
@@ -200,7 +197,7 @@ export default function StudentTable() {
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
             <thead>
               <tr>
-                {['#', '이름', '학년', '학생PIN', '부모PIN', '연락처', ''].map((h, idx) => (
+                {['#', '이름', '학년', '학생PIN', '부모PIN', '연락처', ...(editMode ? [] : [''])].map((h, idx) => (
                   <th
                     key={idx}
                     style={{
@@ -300,15 +297,17 @@ export default function StudentTable() {
                           s.phone || '-'
                         )}
                       </td>
-                      <td style={{ ...tdStyle, borderRight: 'none', textAlign: 'center', padding: '4px 6px' }}>
-                        <button
-                          onClick={() => toggleMemo(s)}
-                          style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, display: 'flex', alignItems: 'center' }}
-                          title="메모"
-                        >
-                          <IconMemo hasContent={hasMemo} />
-                        </button>
-                      </td>
+                      {!editMode && (
+                        <td style={{ ...tdStyle, borderRight: 'none', textAlign: 'center', padding: '4px 6px' }}>
+                          <button
+                            onClick={() => toggleMemo(s)}
+                            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, display: 'flex', alignItems: 'center' }}
+                            title="메모"
+                          >
+                            <IconMemo hasContent={hasMemo} />
+                          </button>
+                        </td>
+                      )}
                       {editMode && (
                         <td style={{ ...tdStyle, borderRight: 'none', textAlign: 'center', padding: '4px 6px' }}>
                           {isDeleting ? (
