@@ -3,7 +3,7 @@ import { todayString } from '../../utils/date';
 const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토'];
 const pad = (n) => String(n).padStart(2, '0');
 
-const STATUS_MARK = { pending: '!', confirmed: '✓' };
+const STATUS_MARK = { pending: '!', confirmed: '✓', departed: '✓' };
 const ANNOUNCE_LABEL = { cancel: '휴강', time_change: '시간변경' };
 
 export default function MonthCalendar({ year, month, statusByDate, announcementsByDate, onDayClick, onPrev, onNext }) {

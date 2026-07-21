@@ -820,12 +820,14 @@ button.calendar-cell {
   color: var(--status-warning);
 }
 
-.calendar-cell--confirmed {
+.calendar-cell--confirmed,
+.calendar-cell--departed {
   background: rgba(12, 163, 12, 0.16);
   border-color: var(--status-good);
 }
 
-.calendar-cell--confirmed .calendar-cell__mark {
+.calendar-cell--confirmed .calendar-cell__mark,
+.calendar-cell--departed .calendar-cell__mark {
   color: var(--status-good);
 }
 

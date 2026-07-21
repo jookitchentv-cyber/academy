@@ -86,7 +86,7 @@ export default function AttendanceCalendar() {
             <div className="subject-section" style={{ marginTop: 16 }}>
               <h3>{selectedDate}</h3>
               {selectedStatus === 'pending' && <p className="subject-section__raw">출석 확인 대기 중입니다.</p>}
-              {selectedStatus === 'confirmed' && <p className="state-message">✓ 출석 확인 완료</p>}
+              {(selectedStatus === 'confirmed' || selectedStatus === 'departed') && <p className="state-message">✓ 출석 확인 완료</p>}
               {selectedStatus === 'none' && !selectedAnnounce && <p className="subject-section__raw">출석 기록이 없는 날짜입니다.</p>}
               {selectedAnnounce && (
                 <p className="subject-section__raw" style={{ marginTop: 8 }}>
