@@ -667,15 +667,21 @@ textarea.study-input {
 }
 
 .subject-section input[type='number'] {
-  width: 90px;
-  min-height: 40px;
-  padding: 8px 10px;
+  width: 56px;
+  min-height: 32px;
+  padding: 4px 8px;
   border-radius: 8px;
   border: 1px solid var(--border);
   background: var(--surface);
   color: var(--text-primary);
-  font-size: 16px; /* 16px 미만이면 iOS Safari가 포커스 시 자동 확대함 */
-  margin-top: 8px;
+  font-size: 15px;
+  text-align: center;
+  -moz-appearance: textfield;
+}
+.subject-section input[type='number']::-webkit-outer-spin-button,
+.subject-section input[type='number']::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
 
 .state-message {

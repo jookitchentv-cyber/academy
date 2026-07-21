@@ -1,21 +1,42 @@
-import { getSubjectColor, UNRATED_COLOR } from '../../constants/colors';
+import { getSubjectColor } from '../../constants/colors';
 
-// 과목 박스 안에 들어가는 단일 막대(meter). percent가 숫자면 그 값만큼 채워지고,
-// null/undefined(미평가)면 빈 트랙 + "미평가" 라벨만 보인다. 학생 화면에서는
-// 항상 읽기 전용으로 쓰이고, 선생님 화면에서는 입력 중인 값을 그대로 반영해 미리보기로 쓴다.
+const SIZE = 68;
+const R = 27;
+const CX = SIZE / 2;
+const CY = SIZE / 2;
+const CIRCUMFERENCE = 2 * Math.PI * R;
+
 export default function SubjectMeter({ subject, percent }) {
   const rated = typeof percent === 'number';
-  const width = rated ? Math.max(0, Math.min(100, percent)) : 0;
+  const color = getSubjectColor(subject);
+  const filled = rated ? Math.max(0, Math.min(100, percent)) : 0;
+  const dash = (filled / 100) * CIRCUMFERENCE;
 
   return (
-    <div className="subject-meter">
-      <div className="subject-meter__track">
-        <div
-          className="subject-meter__fill"
-          style={{ width: `${width}%`, background: rated ? getSubjectColor(subject) : UNRATED_COLOR }}
-        />
-      </div>
-      <span className="subject-meter__label">{rated ? `${percent}%` : '미평가'}</span>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+      <svg width={SIZE} height={SIZE}>
+        <circle cx={CX} cy={CY} r={R} fill="none" stroke="#e8e8e8" strokeWidth={10} />
+        {rated && (
+          <circle
+            cx={CX} cy={CY} r={R}
+            fill="none"
+            stroke={color}
+            strokeWidth={10}
+            strokeDasharray={`${dash} ${CIRCUMFERENCE - dash}`}
+            strokeLinecap="round"
+            strokeDashoffset={CIRCUMFERENCE / 4}
+            style={{ transform: 'rotate(-90deg)', transformOrigin: `${CX}px ${CY}px` }}
+          />
+        )}
+        <text
+          x={CX} y={CY}
+          textAnchor="middle" dominantBaseline="central"
+          fontSize={11} fontWeight={700}
+          fill={rated ? color : '#aaa'}
+        >
+          {rated ? `${percent}%` : '미평가'}
+        </text>
+      </svg>
     </div>
   );
 }

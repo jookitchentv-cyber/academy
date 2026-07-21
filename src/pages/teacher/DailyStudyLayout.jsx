@@ -36,12 +36,7 @@ export default function DailyStudyLayout() {
       <div className="page-header">
         <Link to="/teacher" className="back-link">← 뒤로</Link>
         <h1 style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', margin: 0 }}>일상 공부</h1>
-        <button
-          onClick={openList}
-          style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, color: 'var(--text-secondary)', display: 'flex', alignItems: 'center' }}
-        >
-          <IconList />
-        </button>
+        <span />
       </div>
 
       <Outlet />

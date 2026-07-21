@@ -11,14 +11,6 @@ import Loading from '../../components/common/Loading';
 import EmptyState from '../../components/common/EmptyState';
 import ErrorMessage from '../../components/common/ErrorMessage';
 
-function IconList() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="10"/>
-      <polyline points="12 6 12 12 16 14"/>
-    </svg>
-  );
-}
 
 export default function StudentReviewPage() {
   const { session } = useAuth();
@@ -30,7 +22,6 @@ export default function StudentReviewPage() {
   const [allDates, setAllDates] = useState([]);
   const [showList, setShowList] = useState(false);
   const [listLogs, setListLogs] = useState(null);
-  const [memo, setMemo] = useState('');
   const [studentName, setStudentName] = useState('');
 
   useEffect(() => {
@@ -45,7 +36,6 @@ export default function StudentReviewPage() {
 
   useEffect(() => {
     getStudent(session.studentId).then((s) => {
-      if (s?.memo) setMemo(s.memo);
       if (s?.name) setStudentName(s.name);
     }).catch(() => {});
   }, [session.studentId]);
@@ -78,11 +68,6 @@ export default function StudentReviewPage() {
 
   return (
     <div>
-      {memo && (
-        <div style={{ margin: '8px 12px 0', padding: '12px 14px', background: '#f8f8ff', borderRadius: 10, borderLeft: '3px solid var(--accent)', fontSize: 14, color: 'var(--text-secondary)', whiteSpace: 'pre-wrap', lineHeight: 1.6 }}>
-          {memo}
-        </div>
-      )}
       <div className="date-nav">
         <button className="date-nav__btn" onClick={() => prevDate && goTo(prevDate)} disabled={!prevDate}>‹</button>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -90,9 +75,9 @@ export default function StudentReviewPage() {
           <span className="date-nav__label">{formatDateShort(date)}</span>
           <button
             onClick={() => setShowList(true)}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2, color: 'var(--text-muted)', display: 'flex', alignItems: 'center', position: 'relative', top: 1 }}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2, color: 'var(--text-muted)', fontSize: 12, lineHeight: 1 }}
           >
-            <IconList />
+            ▼
           </button>
         </div>
         <button className="date-nav__btn" onClick={() => nextDate && goTo(nextDate)} disabled={!nextDate || date >= today}>›</button>
@@ -111,11 +96,15 @@ export default function StudentReviewPage() {
               {merged.map((s) => (
                 <div className="subject-section" key={s.subject}>
                   <h3>{s.subject}</h3>
-                  <SubjectMeter subject={s.subject} percent={s.percent} />
-                  {s.planText && <p className="subject-section__plan">계획: {s.planText}</p>}
-                  <p className="subject-section__raw">
-                    오늘 한 양: {s.rawText !== undefined ? s.rawText : '아직 기록 없음'}
-                  </p>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                    <SubjectMeter subject={s.subject} percent={s.percent} />
+                    <div>
+                      {s.planText && <p className="subject-section__plan">계획: {s.planText}</p>}
+                      <p className="subject-section__raw">
+                        오늘 한 양: {s.rawText !== undefined ? s.rawText : '아직 기록 없음'}
+                      </p>
+                    </div>
+                  </div>
                 </div>
               ))}
             </>
@@ -136,7 +125,7 @@ export default function StudentReviewPage() {
               <p style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '16px 0' }}>기록이 없습니다.</p>
             ) : (
               <ul className="log-list" style={{ maxHeight: '60vh', overflowY: 'auto', margin: 0 }}>
-                {listLogs.map((l) => (
+                {[...listLogs].reverse().map((l) => (
                   <li key={l.date}>
                     <button
                       onClick={() => { goTo(l.date); setShowList(false); }}

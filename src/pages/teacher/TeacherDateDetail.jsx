@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { httpsCallable } from 'firebase/functions';
 import { subscribeDailyLog, listDailyLogs, saveTeacherRatings } from '../../services/dailyLogsService';
+import { getStudent } from '../../services/studentsService';
 import { functions } from '../../firebase/config';
 import { formatDateLabel, todayString } from '../../utils/date';
 import { FALLBACK_SUBJECT } from '../../constants/subjects';
@@ -16,6 +17,7 @@ function toInputValue(percent) {
   return typeof percent === 'number' ? String(percent) : '';
 }
 
+
 export default function TeacherDateDetail() {
   const { studentId, date } = useParams();
   const navigate = useNavigate();
@@ -27,6 +29,8 @@ export default function TeacherDateDetail() {
   const [saveStatus, setSaveStatus] = useState('idle');
   const [sendStatus, setSendStatus] = useState('idle');
   const [sendError, setSendError] = useState('');
+  const [memo, setMemo] = useState('');
+  const [showList, setShowList] = useState(false);
 
   const [allDates, setAllDates] = useState([]);
 
@@ -55,6 +59,10 @@ export default function TeacherDateDetail() {
   }, [studentId, date]);
 
   useEffect(() => {
+    getStudent(studentId).then((s) => { if (s?.memo) setMemo(s.memo); }).catch(() => {});
+  }, [studentId]);
+
+  useEffect(() => {
     let cancelled = false;
     listDailyLogs(studentId)
       .then((logs) => {
@@ -66,7 +74,8 @@ export default function TeacherDateDetail() {
 
   const today = todayString();
   const currentIdx = allDates.indexOf(date);
-  const prevDate = currentIdx > 0 ? allDates[currentIdx - 1] : null;
+  const effectiveIdx = currentIdx !== -1 ? currentIdx : allDates.length;
+  const prevDate = effectiveIdx > 0 ? allDates[effectiveIdx - 1] : null;
   const nextDate = currentIdx !== -1 && currentIdx < allDates.length - 1 ? allDates[currentIdx + 1] : null;
   const isAtLatest = date >= today;
 
@@ -152,7 +161,15 @@ export default function TeacherDateDetail() {
         >
           ‹
         </button>
-        <span className="date-nav__label">{formatDateLabel(date)}</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span className="date-nav__label">{formatDateLabel(date)}</span>
+          <button
+            onClick={() => setShowList(true)}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2, color: 'var(--text-muted)', fontSize: 12, lineHeight: 1 }}
+          >
+            ▼
+          </button>
+        </div>
         <button
           className="date-nav__btn"
           onClick={() => nextDate && goTo(nextDate)}
@@ -177,18 +194,26 @@ export default function TeacherDateDetail() {
               const previewPercent = inputValue === '' ? null : Number(inputValue);
               return (
                 <div className="subject-section" key={s.subject}>
-                  <h3>{s.subject}</h3>
-                  <SubjectMeter subject={s.subject} percent={previewPercent} />
-                  {s.planText && <p className="subject-section__plan">계획: {s.planText}</p>}
-                  <p className="subject-section__raw">
-                    오늘 한 양: {s.rawText !== undefined ? s.rawText : '아직 기록 없음'}
-                  </p>
-                  <input
-                    type="number" min={0} max={100} placeholder="미평가"
-                    value={inputValue}
-                    onChange={(e) => handleChange(s.subject, e.target.value)}
-                  />
-                  <span className="hint" style={{ display: 'inline', marginLeft: 6 }}>%</span>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                    <h3 style={{ margin: 0 }}>{s.subject}</h3>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                      <input
+                        type="number" min={0} max={100} placeholder="미평가"
+                        value={inputValue}
+                        onChange={(e) => handleChange(s.subject, e.target.value)}
+                      />
+                      <span className="hint">%</span>
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                    <SubjectMeter subject={s.subject} percent={previewPercent} />
+                    <div style={{ flex: 1 }}>
+                      {s.planText && <p className="subject-section__plan">계획: {s.planText}</p>}
+                      <p className="subject-section__raw">
+                        오늘 한 양: {s.rawText !== undefined ? s.rawText : '아직 기록 없음'}
+                      </p>
+                    </div>
+                  </div>
                 </div>
               );
             })}
@@ -241,9 +266,39 @@ export default function TeacherDateDetail() {
                 </>
               )}
             </div>
+
+            {memo && (
+              <div className="subject-section" style={{ background: '#f8f8ff', fontSize: 14, color: 'var(--text-secondary)', whiteSpace: 'pre-wrap', lineHeight: 1.6 }}>
+                <h3 style={{ marginBottom: 6 }}>메모</h3>
+                {memo}
+              </div>
+            )}
           </>
         );
       })()}
+
+      {showList && (
+        <div className="modal-overlay" onClick={() => setShowList(false)}>
+          <div className="modal-card" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2 className="modal-title">날짜 목록</h2>
+              <button className="modal-close" onClick={() => setShowList(false)}>✕</button>
+            </div>
+            <ul className="log-list" style={{ maxHeight: '60vh', overflowY: 'auto', margin: 0 }}>
+              {[...allDates].reverse().map((d) => (
+                <li key={d}>
+                  <button
+                    onClick={() => { goTo(d); setShowList(false); }}
+                    style={{ width: '100%', background: 'none', border: 'none', cursor: 'pointer', padding: '12px 0', textAlign: 'left' }}
+                  >
+                    <span className="log-date">{formatDateLabel(d)}</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
