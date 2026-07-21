@@ -1,4 +1,4 @@
-const { onDocumentUpdated } = require('firebase-functions/v2/firestore');
+const { onDocumentUpdated, onDocumentWritten } = require('firebase-functions/v2/firestore');
 const { onCall, HttpsError } = require('firebase-functions/v2/https');
 const { onSchedule } = require('firebase-functions/v2/scheduler');
 const { initializeApp } = require('firebase-admin/app');
@@ -194,6 +194,90 @@ exports.sendDailyReport = onCall(async (request) => {
 
   console.log(`하원 보고 발송 완료: ${student.name} / ${date}`);
   return { success: true };
+});
+
+// 공지 푸쉬: Expo Push API로 발송
+async function sendExpoPush(tokens, title, body) {
+  if (!tokens.length) return;
+  const messages = tokens.map((to) => ({ to, sound: 'default', title, body }));
+  const bodyStr = JSON.stringify(messages);
+  return new Promise((resolve, reject) => {
+    const req = https.request(
+      {
+        hostname: 'exp.host',
+        path: '/api/v2/push/send',
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Content-Length': Buffer.byteLength(bodyStr),
+        },
+      },
+      (res) => {
+        let raw = '';
+        res.on('data', (chunk) => { raw += chunk; });
+        res.on('end', () => resolve(JSON.parse(raw)));
+      }
+    );
+    req.on('error', reject);
+    req.write(bodyStr);
+    req.end();
+  });
+}
+
+// 선생님이 공지(휴강/시간변경) 등록/수정/삭제 시 학생에게 푸쉬 알림
+exports.sendAnnouncementPush = onDocumentWritten('teacherAnnouncements/{docId}', async (event) => {
+  const before = event.data.before;
+  const after = event.data.after;
+
+  let data, title, body;
+
+  if (!before.exists && after.exists) {
+    // 생성
+    data = after.data();
+    const typeLabel = data.type === 'cancel' ? '휴강' : '시간변경';
+    const [y, m, d_] = data.date.split('-');
+    const dateStr = `${Number(y)}년 ${Number(m)}월 ${Number(d_)}일`;
+    title = `📢 ${typeLabel}`;
+    body = data.note ? `${dateStr} — ${data.note}` : dateStr;
+  } else if (before.exists && after.exists) {
+    // 수정
+    data = after.data();
+    const typeLabel = data.type === 'cancel' ? '휴강' : '시간변경';
+    const [y, m, d_] = data.date.split('-');
+    const dateStr = `${Number(y)}년 ${Number(m)}월 ${Number(d_)}일`;
+    title = `📢 ${typeLabel}이 수정되었습니다`;
+    body = data.note ? `${dateStr} — ${data.note}` : dateStr;
+  } else if (before.exists && !after.exists) {
+    // 삭제
+    data = before.data();
+    const typeLabel = data.type === 'cancel' ? '휴강' : '시간변경';
+    const [y, m, d_] = data.date.split('-');
+    const dateStr = `${Number(y)}년 ${Number(m)}월 ${Number(d_)}일`;
+    title = `📢 ${typeLabel}이 삭제되었습니다`;
+    body = dateStr;
+  } else {
+    return;
+  }
+
+  const db = getFirestore();
+  const { targetStudentIds } = data;
+  let studentDocs;
+  if (targetStudentIds && targetStudentIds.length > 0) {
+    const snaps = await Promise.all(
+      targetStudentIds.map((id) => db.collection('students').doc(id).get())
+    );
+    studentDocs = snaps.filter((d) => d.exists);
+  } else {
+    const snap = await db.collection('students').get();
+    studentDocs = snap.docs;
+  }
+
+  const tokens = studentDocs.map((d) => d.data().expoPushToken).filter(Boolean);
+  if (!tokens.length) { console.log('발송 대상 토큰 없음'); return; }
+
+  await sendExpoPush(tokens, title, body);
+  console.log(`공지 푸쉬 발송: ${title}, ${tokens.length}명`);
 });
 
 // 매년 1월 1일 00:00 KST (= 12월 31일 15:00 UTC) 학년 자동 진급

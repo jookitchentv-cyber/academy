@@ -65,6 +65,7 @@ export default function TeacherHome() {
       const att = s.logAttendance?.[today];
       if (!att) map.set(s.studentId, 'none');
       else if (att === 'pending') map.set(s.studentId, 'pending');
+      else if (att === 'departed') map.set(s.studentId, 'departed');
       else map.set(s.studentId, 'studying');
     });
     setStatusMap(map);
