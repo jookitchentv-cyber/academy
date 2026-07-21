@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { getAttendanceMap, forceConfirmAttendance } from '../../services/dailyLogsService';
+import { getAttendanceMap } from '../../services/dailyLogsService';
 import { listAnnouncementsForStudent, buildAnnouncementMap } from '../../services/announcementsService';
 import { todayString } from '../../utils/date';
 import MonthCalendar from '../../components/calendar/MonthCalendar';
@@ -31,7 +31,6 @@ export default function AttendanceCalendar() {
   const [allAnnouncements, setAllAnnouncements] = useState([]);
   const [error, setError] = useState('');
   const [selectedDate, setSelectedDate] = useState(null);
-  const [forceConfirming, setForceConfirming] = useState(false);
   useEffect(() => {
     let cancelled = false;
     getAttendanceMap(session.studentId)
@@ -60,18 +59,6 @@ export default function AttendanceCalendar() {
     setSelectedDate((prev) => prev === date ? null : date);
   }
 
-  async function handleForceConfirm() {
-    if (!selectedDate) return;
-    setForceConfirming(true);
-    try {
-      await forceConfirmAttendance(session.studentId, selectedDate);
-      setAllAttendance((prev) => new Map(prev ?? []).set(selectedDate, 'confirmed'));
-    } catch {
-      setError('출석 체크에 실패했습니다.');
-    } finally {
-      setForceConfirming(false);
-    }
-  }
 
   const selectedAnnounce = selectedDate ? announcementsByDate.get(selectedDate) : null;
   const selectedStatus = selectedDate ? statusByDate?.get(selectedDate) ?? 'none' : null;
@@ -102,16 +89,6 @@ export default function AttendanceCalendar() {
               {selectedStatus === 'pending' && <p className="subject-section__raw">출석 확인 대기 중입니다.</p>}
               {(selectedStatus === 'confirmed' || selectedStatus === 'departed') && <p className="state-message">✓ 출석 확인 완료</p>}
               {selectedStatus === 'none' && !selectedAnnounce && <p className="subject-section__raw">출석 기록이 없는 날짜입니다.</p>}
-              {selectedStatus === 'none' && selectedDate <= todayString() && (
-                <button
-                  className="primary-button"
-                  style={{ marginTop: 10 }}
-                  onClick={handleForceConfirm}
-                  disabled={forceConfirming}
-                >
-                  {forceConfirming ? '처리 중...' : '출석 체크'}
-                </button>
-              )}
               {selectedAnnounce && (
                 <p className="subject-section__raw" style={{ marginTop: 8 }}>
                   📢 {ANNOUNCE_LABEL[selectedAnnounce.type]}

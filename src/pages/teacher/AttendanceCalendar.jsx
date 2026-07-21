@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { getAttendanceMap, getDailyLog, confirmAttendance } from '../../services/dailyLogsService';
+import { getAttendanceMap, getDailyLog, confirmAttendance, forceConfirmAttendance } from '../../services/dailyLogsService';
 import { listAnnouncementsForTeacher, buildAnnouncementMap } from '../../services/announcementsService';
 import { useAuth } from '../../context/AuthContext';
-import { formatDateLabel } from '../../utils/date';
+import { formatDateLabel, todayString } from '../../utils/date';
 import MonthCalendar from '../../components/calendar/MonthCalendar';
 import Loading from '../../components/common/Loading';
 import ErrorMessage from '../../components/common/ErrorMessage';
@@ -39,6 +39,7 @@ export default function TeacherAttendanceCalendar() {
   const [selectedDate, setSelectedDate] = useState(null);
   const [detail, setDetail] = useState(undefined);
   const [confirming, setConfirming] = useState(false);
+  const [forceConfirming, setForceConfirming] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -63,6 +64,17 @@ export default function TeacherAttendanceCalendar() {
     setSelectedDate(date);
     setDetail(undefined);
     getDailyLog(studentId, date).then(setDetail).catch(() => setDetail(null));
+  }
+
+  async function handleForceConfirm() {
+    setForceConfirming(true);
+    try {
+      await forceConfirmAttendance(studentId, selectedDate);
+      setAllAttendance((prev) => { const next = new Map(prev); next.set(selectedDate, 'confirmed'); return next; });
+      setDetail((prev) => prev ? { ...prev, attendanceConfirmedAt: new Date() } : { attendanceConfirmedAt: new Date() });
+    } finally {
+      setForceConfirming(false);
+    }
   }
 
   async function handleConfirm() {
@@ -112,7 +124,16 @@ export default function TeacherAttendanceCalendar() {
               {detail === null && <p className="subject-section__raw">해당 날짜 기록이 없습니다.</p>}
               {detail && (
                 <>
-                  {selectedStatus === 'none' && <p className="subject-section__raw">출석 요청이 없는 날짜입니다.</p>}
+                  {selectedStatus === 'none' && (
+                    <>
+                      <p className="subject-section__raw">출석 요청이 없는 날짜입니다.</p>
+                      {selectedDate <= todayString() && (
+                        <button className="primary-button" style={{ marginTop: 8 }} onClick={handleForceConfirm} disabled={forceConfirming}>
+                          {forceConfirming ? '처리 중...' : '출석 체크'}
+                        </button>
+                      )}
+                    </>
+                  )}
                   {selectedStatus === 'pending' && (
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
                       <p className="subject-section__raw" style={{ margin: 0 }}>학생이 출석 버튼을 눌렀습니다.</p>
