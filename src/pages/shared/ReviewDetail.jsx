@@ -52,18 +52,18 @@ export default function ReviewDetail() {
       </p>
       <h2 style={{ fontSize: 16, marginBottom: 16 }}>{formatDateLabel(date)}</h2>
 
+      {isParent && log.comment && (
+        <div className="subject-section">
+          <h3>선생님 코멘트</h3>
+          <p className="subject-section__comment">{log.comment}</p>
+        </div>
+      )}
+
       {merged.length === 0 ? (
         <EmptyState label="인식된 과목이 없습니다." />
       ) : (
         <>
           <OverallStackedBar subjects={merged} />
-
-          {isParent && log.comment && (
-            <div className="subject-section">
-              <h3>선생님 코멘트</h3>
-              <p className="subject-section__comment">{log.comment}</p>
-            </div>
-          )}
 
           {merged.map((s) => (
             <div className="subject-section" key={s.subject}>
