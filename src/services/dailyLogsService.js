@@ -238,3 +238,14 @@ export async function confirmAttendance(studentId, date) {
   await updateDoc(doc(db, 'students', studentId), { [`logAttendance.${date}`]: 'confirmed' });
   cache.delete(cacheKey('index', studentId));
 }
+
+export async function forceConfirmAttendance(studentId, date) {
+  invalidate(studentId, date);
+  const ref = doc(db, 'dailyLogs', logDocId(studentId, date));
+  await setDoc(
+    ref,
+    { studentId, date, attendanceConfirmedAt: serverTimestamp(), updatedAt: serverTimestamp() },
+    { merge: true }
+  );
+  await updateStudentIndex(studentId, date, 'confirmed');
+}
