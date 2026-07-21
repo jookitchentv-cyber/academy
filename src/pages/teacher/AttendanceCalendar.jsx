@@ -144,7 +144,7 @@ export default function TeacherAttendanceCalendar() {
                     </div>
                   )}
                   {selectedStatus === 'confirmed' && (
-                    <p className="state-message">출석 확인 완료 — 부모님께 등원 알림이 발송되었습니다.</p>
+                    <p className="state-message">✓ 출석 확인 완료</p>
                   )}
                 </>
               )}

@@ -240,12 +240,5 @@ export async function confirmAttendance(studentId, date) {
 }
 
 export async function forceConfirmAttendance(studentId, date) {
-  invalidate(studentId, date);
-  const ref = doc(db, 'dailyLogs', logDocId(studentId, date));
-  await setDoc(
-    ref,
-    { studentId, date, attendanceConfirmedAt: serverTimestamp(), updatedAt: serverTimestamp() },
-    { merge: true }
-  );
   await updateStudentIndex(studentId, date, 'confirmed');
 }
