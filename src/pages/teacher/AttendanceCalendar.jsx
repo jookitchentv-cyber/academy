@@ -122,15 +122,10 @@ export default function TeacherAttendanceCalendar() {
               <h3>{formatDateLabel(selectedDate)}</h3>
               {detail === undefined && <Loading />}
               {detail === null && <p className="subject-section__raw">해당 날짜 기록이 없습니다.</p>}
-              {selectedStatus === 'none' && detail !== undefined && (
-                <>
-                  <p className="subject-section__raw">출석 요청이 없는 날짜입니다.</p>
-                  {selectedDate <= todayString() && (
-                    <button className="primary-button" style={{ marginTop: 8 }} onClick={handleForceConfirm} disabled={forceConfirming}>
-                      {forceConfirming ? '처리 중...' : '출석 체크'}
-                    </button>
-                  )}
-                </>
+              {selectedStatus === 'none' && detail !== undefined && selectedDate <= todayString() && (
+                <button className="primary-button" style={{ marginTop: 8 }} onClick={handleForceConfirm} disabled={forceConfirming}>
+                  {forceConfirming ? '처리 중...' : '출석 체크'}
+                </button>
               )}
               {detail && (
                 <>
