@@ -122,18 +122,19 @@ export default function TeacherAttendanceCalendar() {
               <h3>{formatDateLabel(selectedDate)}</h3>
               {detail === undefined && <Loading />}
               {detail === null && <p className="subject-section__raw">해당 날짜 기록이 없습니다.</p>}
+              {selectedStatus === 'none' && detail !== undefined && (
+                <>
+                  <p className="subject-section__raw">출석 요청이 없는 날짜입니다.</p>
+                  {selectedDate <= todayString() && (
+                    <button className="primary-button" style={{ marginTop: 8 }} onClick={handleForceConfirm} disabled={forceConfirming}>
+                      {forceConfirming ? '처리 중...' : '출석 체크'}
+                    </button>
+                  )}
+                </>
+              )}
               {detail && (
                 <>
-                  {selectedStatus === 'none' && (
-                    <>
-                      <p className="subject-section__raw">출석 요청이 없는 날짜입니다.</p>
-                      {selectedDate <= todayString() && (
-                        <button className="primary-button" style={{ marginTop: 8 }} onClick={handleForceConfirm} disabled={forceConfirming}>
-                          {forceConfirming ? '처리 중...' : '출석 체크'}
-                        </button>
-                      )}
-                    </>
-                  )}
+                  {selectedStatus === 'none' && null}
                   {selectedStatus === 'pending' && (
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
                       <p className="subject-section__raw" style={{ margin: 0 }}>학생이 출석 버튼을 눌렀습니다.</p>
