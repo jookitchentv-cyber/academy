@@ -95,7 +95,7 @@ export default function ParentStudyPage() {
       {!error && log === undefined && <Loading />}
       {!error && log === null && <EmptyState label="해당 날짜의 기록이 없습니다." />}
       {memo && (
-        <div style={{ margin: '8px 12px 0', padding: '12px 14px', background: '#f8f8ff', borderRadius: 10, fontSize: 14, color: 'var(--text-secondary)', whiteSpace: 'pre-wrap', lineHeight: 1.6 }}>
+        <div className="subject-section" style={{ background: '#f8f8ff', fontSize: 14, color: 'var(--text-secondary)', whiteSpace: 'pre-wrap', lineHeight: 1.6, marginBottom: 10 }}>
           {memo}
         </div>
       )}
