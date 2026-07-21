@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { getDailyLog, listDailyLogs } from '../../services/dailyLogsService';
+import { getStudent } from '../../services/studentsService';
 import { formatDateLabel, todayString } from '../../utils/date';
 import { mergeSubjectsWithPlan } from '../../utils/subjectsMap';
 import OverallStackedBar from '../../components/charts/OverallStackedBar';
@@ -29,6 +30,7 @@ export default function ParentStudyPage() {
   const [allDates, setAllDates] = useState([]);
   const [showList, setShowList] = useState(false);
   const [listLogs, setListLogs] = useState(null);
+  const [memo, setMemo] = useState('');
 
   useEffect(() => {
     let cancelled = false;
@@ -39,6 +41,10 @@ export default function ParentStudyPage() {
       .catch(() => { if (!cancelled) setError('기록을 불러오지 못했습니다.'); });
     return () => { cancelled = true; };
   }, [session.studentId, date]);
+
+  useEffect(() => {
+    getStudent(session.studentId).then((s) => { if (s?.memo) setMemo(s.memo); }).catch(() => {});
+  }, [session.studentId]);
 
   useEffect(() => {
     let cancelled = false;
@@ -88,6 +94,12 @@ export default function ParentStudyPage() {
       {error && <ErrorMessage>{error}</ErrorMessage>}
       {!error && log === undefined && <Loading />}
       {!error && log === null && <EmptyState label="해당 날짜의 기록이 없습니다." />}
+      {memo && (
+        <div style={{ margin: '8px 12px 0', padding: '12px 14px', background: '#f8f8ff', borderRadius: 10, borderLeft: '3px solid var(--accent)', fontSize: 14, color: 'var(--text-secondary)', whiteSpace: 'pre-wrap', lineHeight: 1.6 }}>
+          {memo}
+        </div>
+      )}
+
       {!error && log && (
         <>
           {log.comment && (
