@@ -68,19 +68,20 @@ export default function StudentReviewPage() {
 
   return (
     <div>
-      <div className="date-nav">
-        <button className="date-nav__btn" onClick={() => prevDate && goTo(prevDate)} disabled={!prevDate}>‹</button>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          {studentName && <span className="date-nav__label" style={{ fontWeight: 700 }}>{studentName}</span>}
-          <span className="date-nav__label">{formatDateShort(date)}</span>
+      <div className="subject-section" style={{ background: '#fff', padding: 0 }}>
+        <div className="date-nav" style={{ paddingTop: 10, paddingBottom: 10 }}>
+          <button className="date-nav__btn" style={{ marginLeft: 16 }} onClick={() => prevDate && goTo(prevDate)} disabled={!prevDate}>‹</button>
           <button
             onClick={() => setShowList(true)}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2, color: 'var(--text-muted)', fontSize: 12, lineHeight: 1 }}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, padding: '2px 4px' }}
           >
-            ▼
+            {studentName && <span className="date-nav__label" style={{ fontWeight: 700 }}>{studentName}</span>}
+            <span className="date-nav__label">{formatDateShort(date)}</span>
+            <span style={{ color: 'var(--text-muted)', fontSize: 12, lineHeight: 1 }}>▼</span>
           </button>
+          <button className="date-nav__btn" style={{ marginRight: 16 }} onClick={() => nextDate && goTo(nextDate)} disabled={!nextDate || date >= today}>›</button>
         </div>
-        <button className="date-nav__btn" onClick={() => nextDate && goTo(nextDate)} disabled={!nextDate || date >= today}>›</button>
+        {!error && log && merged.length > 0 && <OverallStackedBar subjects={merged} />}
       </div>
 
       {error && <ErrorMessage>{error}</ErrorMessage>}
@@ -92,7 +93,7 @@ export default function StudentReviewPage() {
             <EmptyState label="인식된 과목이 없습니다." />
           ) : (
             <>
-              <OverallStackedBar subjects={merged} />
+
               {merged.map((s) => (
                 <div className="subject-section" key={s.subject}>
                   <h3>{s.subject}</h3>
