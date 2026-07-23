@@ -30,7 +30,9 @@ export default function TeacherDateDetail() {
   const [sendStatus, setSendStatus] = useState('idle');
   const [sendError, setSendError] = useState('');
   const [memo, setMemo] = useState('');
+  const [studentName, setStudentName] = useState('');
   const [showList, setShowList] = useState(false);
+  const [visibleCount, setVisibleCount] = useState(50);
 
   const [allDates, setAllDates] = useState([]);
 
@@ -59,7 +61,10 @@ export default function TeacherDateDetail() {
   }, [studentId, date]);
 
   useEffect(() => {
-    getStudent(studentId).then((s) => { if (s?.memo) setMemo(s.memo); }).catch(() => {});
+    getStudent(studentId).then((s) => {
+      if (s?.memo) setMemo(s.memo);
+      if (s?.name) setStudentName(s.name);
+    }).catch(() => {});
   }, [studentId]);
 
   useEffect(() => {
@@ -139,8 +144,11 @@ export default function TeacherDateDetail() {
     }
   }
 
+  const merged = log ? mergeSubjectsWithPlan(log.subjects, log.plan) : [];
+  const misc = log?.subjects?.find((s) => s.subject === FALLBACK_SUBJECT);
+
   return (
-    <div>
+    <div style={{ paddingTop: 5 }}>
       {saveStatus === 'saved' && (
         <div style={{
           position: 'fixed', top: '50%', left: '50%',
@@ -153,41 +161,49 @@ export default function TeacherDateDetail() {
         </div>
       )}
 
-      <div className="date-nav">
-        <button
-          className="date-nav__btn"
-          onClick={() => prevDate && goTo(prevDate)}
-          disabled={!prevDate}
-        >
-          ‹
-        </button>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <span className="date-nav__label">{formatDateLabel(date)}</span>
+      {memo && (
+        <div className="subject-section" style={{ background: '#fff' }}>
+          <fieldset style={{ border: '1px solid #ccc', borderRadius: 6, padding: '10px 12px 12px', minWidth: 0, margin: 0 }}>
+            <legend style={{ display: 'table', margin: '0 auto', padding: '0 8px', fontSize: 12, fontWeight: 600, color: '#888' }}>📌 메모</legend>
+            <p style={{ fontSize: 14, color: 'var(--text-secondary)', whiteSpace: 'pre-wrap', lineHeight: 1.6, margin: 0, textAlign: 'center' }}>{memo}</p>
+          </fieldset>
+        </div>
+      )}
+
+      <div className="subject-section" style={{ background: '#fff', padding: 0 }}>
+        <div className="date-nav" style={{ paddingTop: 10, paddingBottom: 10 }}>
           <button
-            onClick={() => setShowList(true)}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2, color: 'var(--text-muted)', fontSize: 12, lineHeight: 1 }}
+            className="date-nav__btn"
+            style={{ marginLeft: 16 }}
+            onClick={() => prevDate && goTo(prevDate)}
+            disabled={!prevDate}
           >
-            ▼
+            ‹
+          </button>
+          <button
+            onClick={() => { setShowList(true); setVisibleCount(50); }}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, padding: '2px 4px' }}
+          >
+            <span className="date-nav__label">{formatDateLabel(date)}</span>
+            <span style={{ color: 'var(--text-muted)', fontSize: 12, lineHeight: 1 }}>▼</span>
+          </button>
+          <button
+            className="date-nav__btn"
+            style={{ marginRight: 16 }}
+            onClick={() => nextDate && goTo(nextDate)}
+            disabled={!nextDate || isAtLatest}
+          >
+            ›
           </button>
         </div>
-        <button
-          className="date-nav__btn"
-          onClick={() => nextDate && goTo(nextDate)}
-          disabled={!nextDate || isAtLatest}
-        >
-          ›
-        </button>
+        {!error && log && merged.length > 0 && <OverallStackedBar subjects={merged} />}
       </div>
 
       {error && <ErrorMessage>{error}</ErrorMessage>}
       {!error && log === undefined && <Loading />}
       {!error && log === null && <EmptyState label="해당 날짜의 기록이 없습니다." />}
-      {!error && log && (() => {
-        const merged = mergeSubjectsWithPlan(log.subjects, log.plan);
-        const misc = log.subjects.find((s) => s.subject === FALLBACK_SUBJECT);
-        return (
+      {!error && log && (
           <>
-            {merged.length > 0 && <OverallStackedBar subjects={merged} />}
 
             {merged.map((s) => {
               const inputValue = inputs[s.subject] ?? '';
@@ -195,7 +211,7 @@ export default function TeacherDateDetail() {
               return (
                 <div className="subject-section" key={s.subject}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-                    <h3 style={{ margin: 0 }}>{s.subject}</h3>
+                    <h3 style={{ margin: 0, paddingLeft: 8 }}>{s.subject}</h3>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                       <input
                         type="number" min={0} max={100} placeholder="미평가"
@@ -243,7 +259,7 @@ export default function TeacherDateDetail() {
               {saveStatus === 'error' && <p className="state-message state-message--error">저장에 실패했습니다.</p>}
             </div>
 
-            <div className="subject-section" style={{ marginTop: 24, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
+            <div className="subject-section" style={{ marginTop: 10, paddingBottom: 10, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
               <h3>부모님께 하원 보고 전송</h3>
               {log.reportSentAt ? (
                 <p className="state-message">이미 전송된 날짜입니다.</p>
@@ -267,35 +283,45 @@ export default function TeacherDateDetail() {
               )}
             </div>
 
-            {memo && (
-              <div className="subject-section" style={{ background: '#f8f8ff', fontSize: 14, color: 'var(--text-secondary)', whiteSpace: 'pre-wrap', lineHeight: 1.6 }}>
-                <h3 style={{ marginBottom: 6 }}>메모</h3>
-                {memo}
-              </div>
-            )}
           </>
-        );
-      })()}
+      )}
 
       {showList && (
         <div className="modal-overlay" onClick={() => setShowList(false)}>
           <div className="modal-card" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
+            <div className="modal-header" style={{ position: 'relative', justifyContent: 'center', borderBottom: '1px solid #e0e0e0', paddingBottom: 10, marginBottom: 0 }}>
               <h2 className="modal-title">날짜 목록</h2>
-              <button className="modal-close" onClick={() => setShowList(false)}>✕</button>
+              <button className="modal-close" style={{ position: 'absolute', right: 0 }} onClick={() => setShowList(false)}>✕</button>
             </div>
-            <ul className="log-list" style={{ maxHeight: '60vh', overflowY: 'auto', margin: 0 }}>
-              {[...allDates].reverse().map((d) => (
-                <li key={d}>
-                  <button
-                    onClick={() => { goTo(d); setShowList(false); }}
-                    style={{ width: '100%', background: 'none', border: 'none', cursor: 'pointer', padding: '12px 0', textAlign: 'left' }}
-                  >
-                    <span className="log-date">{formatDateLabel(d)}</span>
-                  </button>
-                </li>
-              ))}
-            </ul>
+            {(() => {
+              const reversed = [...allDates].reverse();
+              const visible = reversed.slice(0, visibleCount);
+              const hasMore = reversed.length > visibleCount;
+              return (
+                <ul className="log-list" style={{ maxHeight: '60vh', overflowY: 'auto', margin: 0 }}>
+                  {visible.map((d) => (
+                    <li key={d} style={{ borderBottom: '1px solid #f0f0f0' }}>
+                      <button
+                        onClick={() => { goTo(d); setShowList(false); }}
+                        style={{ width: '100%', height: 48, background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                      >
+                        <span className="log-date">{formatDateLabel(d)}</span>
+                      </button>
+                    </li>
+                  ))}
+                  {hasMore && (
+                    <li>
+                      <button
+                        onClick={() => setVisibleCount((c) => c + 50)}
+                        style={{ width: '100%', height: 48, background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent)', fontWeight: 600, fontSize: 14 }}
+                      >
+                        더 보기
+                      </button>
+                    </li>
+                  )}
+                </ul>
+              );
+            })()}
           </div>
         </div>
       )}

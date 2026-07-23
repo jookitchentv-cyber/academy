@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, Outlet, useNavigate, useParams } from 'react-router-dom';
 import { listDailyLogs } from '../../services/dailyLogsService';
+import { getStudent } from '../../services/studentsService';
 import { formatDateLabel } from '../../utils/date';
 import Loading from '../../components/common/Loading';
 
@@ -18,6 +19,11 @@ export default function DailyStudyLayout() {
   const navigate = useNavigate();
   const [showList, setShowList] = useState(false);
   const [logs, setLogs] = useState(null);
+  const [studentName, setStudentName] = useState('');
+
+  useEffect(() => {
+    getStudent(studentId).then((s) => { if (s?.name) setStudentName(s.name); }).catch(() => {});
+  }, [studentId]);
 
   function openList() {
     setShowList(true);
@@ -34,9 +40,9 @@ export default function DailyStudyLayout() {
   return (
     <div className="page">
       <div className="page-header">
-        <Link to="/teacher" className="back-link">← 뒤로</Link>
+        <Link to="/teacher" className="back-link" style={{ marginLeft: 6 }}>← 뒤로</Link>
         <h1 style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', margin: 0 }}>일상 공부</h1>
-        <span />
+        <span style={{ fontWeight: 600, fontSize: 15, marginRight: 6 }}>{studentName}</span>
       </div>
 
       <Outlet />

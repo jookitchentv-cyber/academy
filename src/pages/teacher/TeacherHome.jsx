@@ -125,7 +125,7 @@ export default function TeacherHome() {
       {!error && students === null && <Loading />}
       {!error && students?.length === 0 && <EmptyState label="등록된 학생이 없습니다." />}
       {!error && students?.length > 0 && (
-        <ul className="teacher-student-list">
+        <ul className="teacher-student-list" style={{ gap: 5 }}>
           {[...students]
             .sort((a, b) => {
               const aP = statusMap.get(a.studentId) === 'pending';
