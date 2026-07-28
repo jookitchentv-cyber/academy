@@ -1,0 +1,146 @@
+import { useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
+import { getDailyLog, listDailyLogs } from '../../services/dailyLogsService';
+import { getStudent } from '../../services/studentsService';
+import { formatDateLabel, formatDateShort, todayString } from '../../utils/date';
+import { mergeSubjectsWithPlan } from '../../utils/subjectsMap';
+import OverallStackedBar from '../../components/charts/OverallStackedBar';
+import SubjectMeter from '../../components/charts/SubjectMeter';
+import Loading from '../../components/common/Loading';
+import EmptyState from '../../components/common/EmptyState';
+import ErrorMessage from '../../components/common/ErrorMessage';
+
+
+export default function StudentReviewPage() {
+  const { session } = useAuth();
+  const { date } = useParams();
+  const navigate = useNavigate();
+
+  const [log, setLog] = useState(undefined);
+  const [error, setError] = useState('');
+  const [allDates, setAllDates] = useState([]);
+  const [showList, setShowList] = useState(false);
+  const [listLogs, setListLogs] = useState(null);
+  const [studentName, setStudentName] = useState('');
+
+  useEffect(() => {
+    let cancelled = false;
+    setLog(undefined);
+    setError('');
+    getDailyLog(session.studentId, date)
+      .then((data) => { if (!cancelled) setLog(data); })
+      .catch(() => { if (!cancelled) setError('기록을 불러오지 못했습니다.'); });
+    return () => { cancelled = true; };
+  }, [session.studentId, date]);
+
+  useEffect(() => {
+    getStudent(session.studentId).then((s) => {
+      if (s?.name) setStudentName(s.name);
+    }).catch(() => {});
+  }, [session.studentId]);
+
+  useEffect(() => {
+    let cancelled = false;
+    listDailyLogs(session.studentId)
+      .then((logs) => {
+        if (!cancelled) {
+          setAllDates(logs.map((l) => l.date).sort());
+          setListLogs(logs);
+        }
+      })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [session.studentId]);
+
+  const today = todayString();
+  const currentIdx = allDates.indexOf(date);
+  // date가 allDates에 없으면(오늘 기록 없음) 마지막 위치로 간주해 이전 날짜 탐색 허용
+  const effectiveIdx = currentIdx !== -1 ? currentIdx : allDates.length;
+  const prevDate = effectiveIdx > 0 ? allDates[effectiveIdx - 1] : null;
+  const nextDate = currentIdx !== -1 && currentIdx < allDates.length - 1 ? allDates[currentIdx + 1] : null;
+
+  function goTo(d) {
+    navigate(`/student/daily/review/${d}`);
+  }
+
+  const merged = log ? mergeSubjectsWithPlan(log.subjects, log.plan) : [];
+
+  return (
+    <div>
+      <div className="subject-section" style={{ background: '#fff', padding: 0 }}>
+        <div className="date-nav" style={{ paddingTop: 10, paddingBottom: 10 }}>
+          <button className="date-nav__btn" style={{ marginLeft: 16 }} onClick={() => prevDate && goTo(prevDate)} disabled={!prevDate}>‹</button>
+          <button
+            onClick={() => setShowList(true)}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, padding: '2px 4px' }}
+          >
+            {studentName && <span className="date-nav__label" style={{ fontWeight: 700 }}>{studentName}</span>}
+            <span className="date-nav__label">{formatDateShort(date)}</span>
+            <span style={{ color: 'var(--text-muted)', fontSize: 12, lineHeight: 1 }}>▼</span>
+          </button>
+          <button className="date-nav__btn" style={{ marginRight: 16 }} onClick={() => nextDate && goTo(nextDate)} disabled={!nextDate || date >= today}>›</button>
+        </div>
+        {!error && log && merged.length > 0 && <OverallStackedBar subjects={merged} />}
+      </div>
+
+      {error && <ErrorMessage>{error}</ErrorMessage>}
+      {!error && log === undefined && <Loading />}
+      {!error && log === null && <EmptyState label="해당 날짜의 기록이 없습니다." />}
+      {!error && log && (
+        <>
+          {merged.length === 0 ? (
+            <EmptyState label="인식된 과목이 없습니다." />
+          ) : (
+            <>
+
+              {merged.map((s) => (
+                <div className="subject-section" key={s.subject}>
+                  <h3>{s.subject}</h3>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                    <SubjectMeter subject={s.subject} percent={s.percent} />
+                    <div>
+                      {s.planText && <p className="subject-section__plan">계획: {s.planText}</p>}
+                      <p className="subject-section__raw">
+                        오늘 한 양: {s.rawText !== undefined ? s.rawText : '아직 기록 없음'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </>
+          )}
+        </>
+      )}
+
+      {showList && (
+        <div className="modal-overlay" onClick={() => setShowList(false)}>
+          <div className="modal-card" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2 className="modal-title">날짜 목록</h2>
+              <button className="modal-close" onClick={() => setShowList(false)}>✕</button>
+            </div>
+            {listLogs === null ? (
+              <Loading />
+            ) : listLogs.length === 0 ? (
+              <p style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '16px 0' }}>기록이 없습니다.</p>
+            ) : (
+              <ul className="log-list" style={{ maxHeight: '60vh', overflowY: 'auto', margin: 0 }}>
+                {[...listLogs].reverse().map((l) => (
+                  <li key={l.date}>
+                    <button
+                      onClick={() => { goTo(l.date); setShowList(false); }}
+                      style={{ width: '100%', background: 'none', border: 'none', cursor: 'pointer', padding: '12px 0', textAlign: 'left' }}
+                    >
+                      <span className="log-date">{formatDateLabel(l.date)}</span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
