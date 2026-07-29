@@ -68,7 +68,7 @@ body {
   }
   .teacher-student-action {
     padding: 6px 7px;
-    min-width: 44px;
+    min-width: 48px;
   }
   .teacher-student-action span {
     font-size: 9px;
@@ -785,15 +785,15 @@ textarea.study-input {
   aspect-ratio: 1;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: space-evenly;
+  align-items: flex-start;
+  justify-content: flex-start;
   gap: 0;
   border-radius: 8px;
   border: 1px solid var(--border);
   background: var(--surface);
   font: inherit;
   cursor: default;
-  padding: 2px 1px;
+  padding: 4px 5px;
 }
 
 button.calendar-cell {
@@ -1124,7 +1124,7 @@ button.calendar-cell {
   border-radius: 10px;
   border: 1px solid var(--border);
   background: #f7f7f7;
-  min-width: 52px;
+  min-width: 60px;
 }
 
 .teacher-student-action span {
@@ -1293,6 +1293,96 @@ button.calendar-cell {
 .teacher-tab__label {
   font-size: 11px;
   font-weight: 600;
+}
+
+/* ─────────────────────────────────────────────────────────── */
+
+/* ── Planner ─────────────────────────────────────────────── */
+
+.planner-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.planner-cell {
+  position: relative;
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: pointer;
+  font: inherit;
+  padding: 4px 5px;
+  outline: none;
+}
+
+.planner-cell--blank {
+  background: transparent;
+  border: none;
+  pointer-events: none;
+}
+
+.planner-cell--today {
+  box-shadow: 0 0 0 2px var(--accent) inset;
+}
+
+.planner-cell--today .planner-day {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.planner-day {
+  font-size: 13px;
+  position: relative;
+  z-index: 1;
+  line-height: 1;
+}
+
+.planner-today-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.85);
+  position: absolute;
+  bottom: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2;
+}
+
+.planner-pill {
+  position: absolute;
+  inset: 0;
+  background: var(--accent);
+  z-index: 0;
+}
+
+.planner-pill--active {
+  filter: brightness(0.82);
+}
+
+.planner-pill--pick {
+  opacity: 0.5;
+}
+
+.planner-panel {
+  margin-top: 14px;
+  padding: 14px 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+}
+
+.planner-panel__label {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin: 0 0 10px;
 }
 
 /* ─────────────────────────────────────────────────────────── */

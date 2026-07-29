@@ -13,6 +13,7 @@ import StudyTextInput from './pages/student/StudyTextInput';
 import StudentReviewPage from './pages/student/StudentReviewPage';
 import ExamPrep from './pages/student/ExamPrep';
 import StudentAttendanceCalendar from './pages/student/AttendanceCalendar';
+import StudentPlannerPage from './pages/student/PlannerPage';
 
 import ReviewHistory from './pages/shared/ReviewHistory';
 import ReviewDetail from './pages/shared/ReviewDetail';
@@ -28,6 +29,7 @@ import TeacherSettings from './pages/teacher/TeacherSettings';
 import TeacherDailyStudyLayout from './pages/teacher/DailyStudyLayout';
 import TeacherDateDetail from './pages/teacher/TeacherDateDetail';
 import TeacherAttendanceCalendar from './pages/teacher/AttendanceCalendar';
+import TeacherPlannerPage from './pages/teacher/PlannerPage';
 import AnnouncementForm from './pages/teacher/AnnouncementForm';
 import StudentForm from './pages/teacher/StudentForm';
 import StudentTable from './pages/teacher/StudentTable';
@@ -50,6 +52,7 @@ export default function App() {
                 <Route path="review/:date" element={<StudentReviewPage />} />
               </Route>
               <Route path="/student/exam" element={<ExamPrep />} />
+              <Route path="/student/planner" element={<StudentPlannerPage />} />
               <Route path="/student/attendance" element={<StudentAttendanceCalendar />} />
               <Route path="/student/settings" element={<StudentSettings />} />
             </Route>
@@ -73,6 +76,7 @@ export default function App() {
                 <Route path=":date" element={<TeacherDateDetail />} />
               </Route>
               <Route path="/teacher/students/:studentId/exam" element={<ExamPrep />} />
+              <Route path="/teacher/students/:studentId/planner" element={<TeacherPlannerPage />} />
               <Route path="/teacher/students/:studentId/attendance" element={<TeacherAttendanceCalendar />} />
               <Route path="/teacher/announcements/new" element={<AnnouncementForm />} />
               <Route path="/teacher/new-student" element={<StudentForm />} />
