@@ -30,5 +30,8 @@ service cloud.firestore {
     match /plannerEntries/{id} {
       allow read, write: if true;
     }
+    match /paymentSettings/{id} {
+      allow read, write: if true;
+    }
   }
 }

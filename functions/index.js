@@ -280,6 +280,56 @@ exports.sendAnnouncementPush = onDocumentWritten('teacherAnnouncements/{docId}',
   console.log(`공지 푸쉬 발송: ${title}, ${tokens.length}명`);
 });
 
+// 수납 알림톡: 선생님이 수납 페이지에서 전송 버튼을 클릭할 때 호출
+exports.sendPaymentAlim = onCall(async (request) => {
+  const { studentId, year, month, classDays, totalFee, note, bankInfo } = request.data ?? {};
+  if (!studentId || !year || !month) throw new HttpsError('invalid-argument', '필수 파라미터 누락');
+
+  const db = getFirestore();
+  const { parent, student } = await getParentAndStudent(db, studentId);
+
+  if (!parent?.phone)  throw new HttpsError('failed-precondition', '부모님 연락처가 없습니다.');
+  if (!student?.name)  throw new HttpsError('not-found', '학생 정보가 없습니다.');
+
+  const yearMonth  = `${year}년 ${month}월`;
+  const feeStr     = Number(totalFee).toLocaleString('ko-KR');
+  const bankStr    = bankInfo || '신한은행 110-553-424930 화랑';
+  const noteBlock  = note ? `\n${note}\n` : '';
+
+  const smsText =
+    `[화랑멘토링스쿨] ${yearMonth} 수납 안내\n\n` +
+    `학생명: ${student.name}\n` +
+    `수업일수: ${classDays}일\n` +
+    `예상 결제금액: ${feeStr}원` +
+    `${noteBlock}\n` +
+    `수납 방법:\n` +
+    `1. 이체: ${bankStr}\n` +
+    `2. 현장 결제\n\n` +
+    `현금영수증 필요하시면 말씀 부탁드립니다!`;
+
+  try {
+    // 알림톡 템플릿 등록 전까지 SMS fallback으로 발송됨
+    await sendMessage(
+      parent.phone,
+      'KA01TP_PAYMENT_PLACEHOLDER',
+      {
+        '#{년월}':      yearMonth,
+        '#{학생이름}':  student.name,
+        '#{수업일수}':  String(classDays),
+        '#{결제금액}':  feeStr,
+        '#{특이사항}':  note || '',
+        '#{계좌정보}':  bankStr,
+      },
+      smsText,
+    );
+  } catch (e) {
+    throw new HttpsError('internal', `메시지 전송 실패: ${e.message}`);
+  }
+
+  console.log(`수납 알림 발송 완료: ${student.name} / ${yearMonth}`);
+  return { success: true };
+});
+
 // 매년 1월 1일 00:00 KST (= 12월 31일 15:00 UTC) 학년 자동 진급
 const GRADE_ORDER = ['중1', '중2', '중3', '고1', '고2', '고3'];
 

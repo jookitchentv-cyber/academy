@@ -149,7 +149,7 @@ export default function TeacherHome() {
             return (
             <li key={s.studentId} className="teacher-student-item">
               <div className="teacher-student-info">
-                <span className="teacher-student-name">{s.name}</span>
+                <Link to={`/teacher/students/${s.studentId}/payment`} className="teacher-student-name" style={{ textDecoration: 'none', color: 'inherit' }}>{s.name}</Link>
                 <div className="teacher-student-meta">
                   {s.grade && <span className="teacher-student-grade">{s.grade}</span>}
                   {status === 'pending' && (

@@ -30,6 +30,7 @@ import TeacherDailyStudyLayout from './pages/teacher/DailyStudyLayout';
 import TeacherDateDetail from './pages/teacher/TeacherDateDetail';
 import TeacherAttendanceCalendar from './pages/teacher/AttendanceCalendar';
 import TeacherPlannerPage from './pages/teacher/PlannerPage';
+import StudentPaymentPage from './pages/teacher/StudentPaymentPage';
 import AnnouncementForm from './pages/teacher/AnnouncementForm';
 import StudentForm from './pages/teacher/StudentForm';
 import StudentTable from './pages/teacher/StudentTable';
@@ -77,6 +78,7 @@ export default function App() {
               </Route>
               <Route path="/teacher/students/:studentId/exam" element={<ExamPrep />} />
               <Route path="/teacher/students/:studentId/planner" element={<TeacherPlannerPage />} />
+              <Route path="/teacher/students/:studentId/payment" element={<StudentPaymentPage />} />
               <Route path="/teacher/students/:studentId/attendance" element={<TeacherAttendanceCalendar />} />
               <Route path="/teacher/announcements/new" element={<AnnouncementForm />} />
               <Route path="/teacher/new-student" element={<StudentForm />} />
