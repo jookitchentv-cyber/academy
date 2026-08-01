@@ -5,6 +5,7 @@ import { todayString } from './utils/date';
 
 import LoginPage from './pages/LoginPage';
 import NotFound from './pages/NotFound';
+import PrivacyPage from './pages/PrivacyPage';
 
 import StudentLayout from './pages/student/StudentLayout';
 import StudentSettings from './pages/student/StudentSettings';
@@ -88,6 +89,7 @@ export default function App() {
             </Route>
           </Route>
 
+          <Route path="/privacy" element={<PrivacyPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
